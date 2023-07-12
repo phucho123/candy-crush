@@ -74,7 +74,10 @@ export class TweenManager {
                                     repeat: 0,
                                     ease: 'quad.out',
                                     duration: 1000,
-                                    onComplete: () => this.gameScene?.checkMatches(),
+                                    onComplete: () => {
+                                        this.gameScene?.checkMatches()
+                                        this.gameScene?.setCanMove(true)
+                                    },
                                 })
                             } else {
                                 this.scene.add.tween({

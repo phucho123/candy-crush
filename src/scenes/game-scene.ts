@@ -1,6 +1,7 @@
 import { CONST } from '../const/const'
 import { Position } from '../interfaces/myinterface.interface'
 import { Tile } from '../objects/tile'
+import { EmitterManager } from '../tweens/EmitterManager'
 import { TweenManager } from '../tweens/TweenManager'
 import { Progressbar } from '../ui/Progressbar'
 
@@ -23,6 +24,7 @@ export class GameScene extends Phaser.Scene {
     private idle: boolean
     private hintButton: Phaser.GameObjects.Text
     private shuffleButton: Phaser.GameObjects.Text
+    private emitterManager: EmitterManager
 
     constructor() {
         super({
@@ -34,6 +36,8 @@ export class GameScene extends Phaser.Scene {
         return GameScene.instance
     }
     init(): void {
+        this.emitterManager = EmitterManager.getInstance(this)
+        this.emitterManager.playConffetiEffect(0, this.sys.canvas.height / 2)
         this.tweenManager = TweenManager.getInstance(this)
         this.progressBar = new Progressbar(this)
         this.idle = false
@@ -102,6 +106,7 @@ export class GameScene extends Phaser.Scene {
 
     restart() {
         if (!this.tileGrid) return
+        this.canMove = false
         this.shuffle()
         for (let y = 0; y < this.tileGrid.length; y++) {
             for (let x = 0; x < this.tileGrid[y].length; x++) {
@@ -146,7 +151,11 @@ export class GameScene extends Phaser.Scene {
      * @param gameobject
      * @param event
      */
-    private tileDown(pointer: any, gameobject: Tile | undefined, event: any): void {
+    private tileDown(
+        _pointer: Phaser.Input.Pointer,
+        gameobject: Tile | undefined,
+        _event: any
+    ): void {
         if (gameobject?.type != 'Image') return
         if (this.canMove) {
             if (!this.firstSelectedTile) {
@@ -536,7 +545,8 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    update(time: number, delta: number): void {
+    update(_time: number, _delta: number): void {
+        this.emitterManager.update()
         if (this.idle) {
             if (this.score >= 3000) {
                 this.restart()
@@ -550,5 +560,9 @@ export class GameScene extends Phaser.Scene {
             this.hintButton.setAlpha(0.5)
             this.shuffleButton.setAlpha(0.5)
         }
+    }
+
+    setCanMove(canMove: boolean) {
+        this.canMove = canMove
     }
 }
