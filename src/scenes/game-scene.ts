@@ -16,13 +16,13 @@ export class GameScene extends Phaser.Scene {
     private firstSelectedTile: Tile | undefined
     private secondSelectedTile: Tile | undefined
 
-    private firstSelectedTileTween: Phaser.Tweens.Tween
-    private secondSelectedTileTween: Phaser.Tweens.Tween
-
     private progressBar: Progressbar
     private score = 0
-    private restartTween: Phaser.Tweens.Tween
     private tweenManager: TweenManager
+    private idleTimeout: NodeJS.Timeout
+    private idle: boolean
+    private hintButton: Phaser.GameObjects.Text
+    private shuffleButton: Phaser.GameObjects.Text
 
     constructor() {
         super({
@@ -36,6 +36,7 @@ export class GameScene extends Phaser.Scene {
     init(): void {
         this.tweenManager = TweenManager.getInstance(this)
         this.progressBar = new Progressbar(this)
+        this.idle = false
         this.progressBar.init()
         // Init variables
         this.canMove = true
@@ -53,17 +54,16 @@ export class GameScene extends Phaser.Scene {
                 this.tileGrid[y][x] = tile
             }
         }
+        this.debug()
         this.restart()
         this.input.on('gameobjectdown', this.tileDown, this)
 
         // Check if matches on the start
         // this.checkMatches()
-
-        this.debug()
     }
 
     debug() {
-        this.add
+        this.shuffleButton = this.add
             .text(this.sys.canvas.width - 10, 50, 'Shuffle', {
                 color: '#ffffff',
                 fontSize: '32px',
@@ -71,8 +71,11 @@ export class GameScene extends Phaser.Scene {
             })
             .setInteractive()
             .setOrigin(1, 0)
-            .on('pointerdown', () => this.restart())
-        this.add
+            .setAlpha(0.5)
+            .on('pointerdown', () => {
+                if (this.idle) this.restart()
+            })
+        this.hintButton = this.add
             .text(this.sys.canvas.width - 10, 90, 'Hint', {
                 color: '#ffffff',
                 fontSize: '32px',
@@ -80,7 +83,10 @@ export class GameScene extends Phaser.Scene {
             })
             .setInteractive()
             .setOrigin(1, 0)
-            .on('pointerdown', () => this.hintMove())
+            .setAlpha(0.5)
+            .on('pointerdown', () => {
+                if (this.idle) this.hintMove()
+            })
     }
 
     shuffle() {
@@ -97,86 +103,20 @@ export class GameScene extends Phaser.Scene {
     restart() {
         if (!this.tileGrid) return
         this.shuffle()
+        for (let y = 0; y < this.tileGrid.length; y++) {
+            for (let x = 0; x < this.tileGrid[y].length; x++) {
+                if (this.tileGrid[y][x]) this.tileGrid[y][x].stopHintEffect()
+            }
+        }
         this.tweenManager.restartTweenPlay(this.tileGrid)
-        // const gameObj = [] as Tile[]
-        // for (let y = 0; y < CONST.gridHeight; y++) {
-        //     for (let x = 0; x < CONST.gridWidth; x++) {
-        //         gameObj.push(this.tileGrid[y][x])
-        //     }
-        // }
-
-        // ///shuffle array
-        // for (let i = gameObj.length - 1; i > 0; i--) {
-        //     const j = Math.floor(Math.random() * (i + 1))
-        //     ;[gameObj[i], gameObj[j]] = [gameObj[j], gameObj[i]]
-        // }
-
-        // const circle = new Phaser.Geom.Circle(
-        //     this.sys.canvas.width / 2,
-        //     this.sys.canvas.height / 2 + 144,
-        //     200
-        // )
-
-        // Phaser.Actions.PlaceOnCircle(gameObj, circle)
-
-        // if (this.restartTween) this.restartTween.destroy()
-
-        // this.restartTween = this.tweens.add({
-        //     targets: circle,
-        //     radius: 200,
-        //     ease: 'Quintic.easeInOut',
-        //     duration: 1000,
-        //     yoyo: true,
-        //     repeat: 1,
-        //     onUpdate: function () {
-        //         Phaser.Actions.RotateAroundDistance(
-        //             gameObj,
-        //             { x: circle.x, y: circle.y },
-        //             0.02,
-        //             circle.radius
-        //         )
-        //     },
-        //     onComplete: () => {
-        //         if (this.tileGrid) {
-        //             for (let y = 0; y < CONST.gridHeight; y++) {
-        //                 for (let x = 0; x < CONST.gridWidth; x++) {
-        //                     if (y == CONST.gridHeight - 1 && x == CONST.gridWidth - 1) {
-        //                         this.add.tween({
-        //                             targets: this.tileGrid[y][x],
-        //                             x: (x + 0.5) * CONST.tileWidth,
-        //                             y: (y + 0.5) * CONST.tileHeight + CONST.alignY,
-        //                             repeat: 0,
-        //                             ease: 'quad.out',
-        //                             duration: 1000,
-        //                             onComplete: () => this.checkMatches(),
-        //                         })
-        //                     } else {
-        //                         this.add.tween({
-        //                             targets: this.tileGrid[y][x],
-        //                             x: (x + 0.5) * CONST.tileWidth,
-        //                             y: (y + 0.5) * CONST.tileHeight + CONST.alignY,
-        //                             repeat: 0,
-        //                             ease: 'quad.out',
-        //                             duration: 1000,
-        //                         })
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     },
-        // })
 
         // Selected Tiles
-        if (this.firstSelectedTileTween) {
-            this.firstSelectedTileTween.destroy()
-            this.firstSelectedTile?.setScale(1)
-        }
-        if (this.secondSelectedTileTween) {
-            this.secondSelectedTile?.setScale(1)
-            this.secondSelectedTileTween.destroy()
-        }
+        this.tweenManager.selectedTileTweenDestroy(1)
+        this.tweenManager.selectedTileTweenDestroy(2)
         this.firstSelectedTile = undefined
         this.secondSelectedTile = undefined
+
+        this.idle = false
     }
 
     /**
@@ -211,29 +151,13 @@ export class GameScene extends Phaser.Scene {
         if (this.canMove) {
             if (!this.firstSelectedTile) {
                 this.firstSelectedTile = gameobject
-                this.firstSelectedTileTween = this.add.tween({
-                    targets: gameobject,
-                    scale: 1.5,
-                    yoyo: true,
-                    duration: 500,
-                    repeat: -1,
-                })
+                this.tweenManager.selectedTileTweenPlay(this.firstSelectedTile, 1)
             } else {
                 // So if we are here, we must have selected a second tile
                 if (this.firstSelectedTile == gameobject || this.secondSelectedTile == gameobject)
                     return
-                if (this.secondSelectedTileTween) {
-                    this.secondSelectedTile?.setScale(1)
-                    this.secondSelectedTileTween.destroy()
-                }
                 this.secondSelectedTile = gameobject
-                this.secondSelectedTileTween = this.add.tween({
-                    targets: gameobject,
-                    scale: 1.5,
-                    yoyo: true,
-                    duration: 500,
-                    repeat: -1,
-                })
+                this.tweenManager.selectedTileTweenPlay(this.secondSelectedTile, 2)
                 if (this.secondSelectedTile) {
                     const dx =
                         Math.abs(this.firstSelectedTile.x - this.secondSelectedTile.x) /
@@ -257,6 +181,7 @@ export class GameScene extends Phaser.Scene {
      * It will only work, if two tiles have been selected.
      */
     private swapTiles(): void {
+        if (!this.tileGrid) return
         if (this.firstSelectedTile && this.secondSelectedTile) {
             // Get the position of the two tiles
             const firstTilePosition = {
@@ -281,31 +206,7 @@ export class GameScene extends Phaser.Scene {
                     this.firstSelectedTile
             }
 
-            // Move them on the screen with tweens
-            this.add.tween({
-                targets: this.firstSelectedTile,
-                x: this.secondSelectedTile.x,
-                y: this.secondSelectedTile.y,
-                rotation: Math.PI * 2,
-                ease: 'Linear',
-                duration: 400,
-                repeat: 0,
-                yoyo: false,
-            })
-
-            this.add.tween({
-                targets: this.secondSelectedTile,
-                x: this.firstSelectedTile.x,
-                y: this.firstSelectedTile.y,
-                rotation: Math.PI * 2,
-                ease: 'Linear',
-                duration: 400,
-                repeat: 0,
-                yoyo: false,
-                onComplete: () => {
-                    this.checkMatches()
-                },
-            })
+            this.tweenManager.swapTileTween(this.firstSelectedTile, this.secondSelectedTile)
 
             if (this.tileGrid) {
                 this.firstSelectedTile =
@@ -326,6 +227,15 @@ export class GameScene extends Phaser.Scene {
         //Call the getMatches function to check for spots where there is
         //a run of three or more tiles in a row
         if (!this.tileGrid) return
+        if (this.idleTimeout) {
+            this.idle = false
+            this.hintButton.setAlpha(0.5)
+            clearTimeout(this.idleTimeout)
+        }
+
+        this.idleTimeout = setTimeout(() => {
+            this.idle = true
+        }, 1300)
         const matches = this.getMatches(this.tileGrid)
 
         //If there are matches, remove them
@@ -345,47 +255,11 @@ export class GameScene extends Phaser.Scene {
             this.swapTiles()
             this.tileUp()
             this.canMove = true
-            if (this.checkTileGridFull()) {
-                if (this.score >= 3000) {
-                    this.progressBar.updateProgreebar(0)
-                    this.progressBar.updateScore(this.score, 0)
-                    this.score = 0
-                    this.restart()
-                }
-            }
+            // if (this.checkTileGridFull()) {
+
+            // }
         }
     }
-
-    // private resetTile(): void {
-    //     if (!this.tileGrid) return
-    //     // Loop through each column starting from the left
-    //     for (let y = this.tileGrid.length - 1; y > 0; y--) {
-    //         // Loop through each tile in column from bottom to top
-    //         for (let x = this.tileGrid[y].length - 1; x > 0; x--) {
-    //             // If this space is blank, but the one above it is not, move the one above down
-    //             if (this.tileGrid[y][x] === undefined && this.tileGrid[y - 1][x] !== undefined) {
-    //                 // Move the tile above down one
-    //                 const tempTile = this.tileGrid[y - 1][x]
-    //                 this.tileGrid[y][x] = tempTile
-    //                 ;(this.tileGrid[y - 1][x] as Tile | undefined) = undefined
-
-    //                 this.add.tween({
-    //                     targets: tempTile,
-    //                     y: CONST.tileHeight * y + CONST.tileHeight / 2,
-    //                     ease: 'Linear',
-    //                     duration: 500, //200
-    //                     repeat: 0,
-    //                     yoyo: false,
-    //                 })
-
-    //                 //The positions have changed so start this process again from the bottom
-    //                 //NOTE: This is not set to me.tileGrid[i].length - 1 because it will immediately be decremented as
-    //                 //we are at the end of the loop.
-    //                 x = this.tileGrid[y].length
-    //             }
-    //         }
-    //     }
-    // }
 
     private resetTile(): void {
         if (!this.tileGrid) return
@@ -404,14 +278,7 @@ export class GameScene extends Phaser.Scene {
                     this.tileGrid[y][x] = tempTile
                     ;(this.tileGrid[y_tmp - 1][x] as Tile | undefined) = undefined
 
-                    this.add.tween({
-                        targets: tempTile,
-                        y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
-                        ease: 'back.inout',
-                        duration: 700, //200
-                        repeat: 0,
-                        yoyo: false,
-                    })
+                    this.tweenManager.resetTileTween(tempTile, y)
 
                     //The positions have changed so start this process again from the bottom
                     //NOTE: This is not set to me.tileGrid[i].length - 1 because it will immediately be decremented as
@@ -444,17 +311,7 @@ export class GameScene extends Phaser.Scene {
                         y_tmp += 1
                     }
                     if (y == 0) tile.setY(-CONST.tileHeight * (cnt - 0.5))
-                    this.add.tween({
-                        targets: tile,
-                        y: CONST.tileHeight * y_tmp + CONST.tileHeight / 2 + CONST.alignY,
-                        duration: 700, //200
-                        repeat: 0,
-                        yoyo: false,
-                        ease: 'back.inout',
-                        onComplete: () => {
-                            this.checkMatches()
-                        },
-                    })
+                    this.tweenManager.fillTileTween(tile, y_tmp)
                     this.tileGrid[y_tmp][x] = tile
                     cnt++
                 }
@@ -463,15 +320,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     private tileUp(): void {
-        // Reset active tiles
-        if (this.firstSelectedTileTween) {
-            this.firstSelectedTileTween.destroy()
-            this.firstSelectedTile?.setScale(1)
-        }
-        if (this.secondSelectedTileTween) {
-            this.secondSelectedTileTween.destroy()
-            this.secondSelectedTile?.setScale(1)
-        }
+        this.tweenManager.selectedTileTweenDestroy(1)
+        this.tweenManager.selectedTileTweenDestroy(2)
 
         this.firstSelectedTile = undefined
         this.secondSelectedTile = undefined
@@ -494,10 +344,24 @@ export class GameScene extends Phaser.Scene {
 
                 // Remove the tile from the theoretical grid
                 if (tilePos.x !== -1 && tilePos.y !== -1) {
-                    tile.destroy()
-                    tile.updateEmitterPosition()
-                    tile.explode()
-                    ;(this.tileGrid[tilePos.y][tilePos.x] as Tile | undefined) = undefined
+                    this.stopHintEffect()
+                    if (tempArr.length >= 4 && this.firstSelectedTile && this.secondSelectedTile) {
+                        if (tile == this.firstSelectedTile || tile == this.secondSelectedTile) {
+                            this.tweenManager.overlapTileTweenPlay(
+                                tempArr.filter((tmp_tile) => tmp_tile != tile),
+                                tile.x,
+                                tile.y
+                            )
+                        } else {
+                            (this.tileGrid[tilePos.y][tilePos.x] as Tile | undefined) = undefined
+                        }
+                    } else {
+                        tile.destroy()
+                        // this.stopHintEffect()
+                        tile.updateEmitterPosition()
+                        tile.explode()
+                        ;(this.tileGrid[tilePos.y][tilePos.x] as Tile | undefined) = undefined
+                    }
                 }
             }
         }
@@ -613,17 +477,25 @@ export class GameScene extends Phaser.Scene {
                     this.swapTileVertical(y, y + 1, x)
                     if (this.getMatches(this.tileGrid).length) {
                         find = true
-                        console.log(`(x: ${x},y: ${y})`)
+                        console.log(`(x: ${x},y: ${y}), 1`)
                     }
                     this.swapTileVertical(y, y + 1, x)
+                    if (find) {
+                        this.tileGrid[y][x].playHintEffect()
+                        this.tileGrid[y + 1][x].playHintEffect()
+                    }
                 }
                 if (!find && x < this.tileGrid[0].length - 1) {
                     this.swapTileHorizontal(x, x + 1, y)
                     if (this.getMatches(this.tileGrid).length) {
                         find = true
-                        console.log(`(x: ${x},y: ${y})`)
+                        console.log(`(x: ${x},y: ${y}), 2`)
                     }
                     this.swapTileHorizontal(x, x + 1, y)
+                    if (find) {
+                        this.tileGrid[y][x].playHintEffect()
+                        this.tileGrid[y][x + 1].playHintEffect()
+                    }
                 }
             }
         }
@@ -653,5 +525,30 @@ export class GameScene extends Phaser.Scene {
             }
         }
         return true
+    }
+
+    stopHintEffect() {
+        if (!this.tileGrid) return
+        for (let y = 0; y < this.tileGrid.length; y++) {
+            for (let x = 0; x < this.tileGrid[y].length; x++) {
+                if (this.tileGrid[y][x]) this.tileGrid[y][x].stopHintEffect()
+            }
+        }
+    }
+
+    update(time: number, delta: number): void {
+        if (this.idle) {
+            if (this.score >= 3000) {
+                this.restart()
+                this.progressBar.updateProgreebar(0)
+                this.progressBar.updateScore(this.score, 0)
+                this.score = 0
+            }
+            this.hintButton.setAlpha(1)
+            this.shuffleButton.setAlpha(1)
+        } else {
+            this.hintButton.setAlpha(0.5)
+            this.shuffleButton.setAlpha(0.5)
+        }
     }
 }

@@ -3,6 +3,7 @@ export class Progressbar extends Phaser.GameObjects.Container {
     private progressbarFill: Phaser.GameObjects.Rectangle
     private progressbarEmitter: Phaser.GameObjects.Particles.ParticleEmitter
     private scoreDisplay: Phaser.GameObjects.Text
+    private hintButton: Phaser.GameObjects.Text
     constructor(scene: Phaser.Scene) {
         super(scene)
     }
@@ -10,6 +11,7 @@ export class Progressbar extends Phaser.GameObjects.Container {
     init() {
         this.scene.add.container(0, 0, this)
         this.setSize(this.scene.sys.canvas.width, 144)
+        this.add(this.scene.add.rectangle(0, 0, this.width, this.height, 0x0000ff, 1).setOrigin(0))
         this.setPosition(0, 0)
         this.progressbar = this.scene.add
             .rectangle(10, 100, 150, 20, 0xffffff)
