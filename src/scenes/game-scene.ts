@@ -25,6 +25,7 @@ export class GameScene extends Phaser.Scene {
     private hintButton: Phaser.GameObjects.Text
     private shuffleButton: Phaser.GameObjects.Text
     private emitterManager: EmitterManager
+    private findMove: boolean
 
     constructor() {
         super({
@@ -37,13 +38,14 @@ export class GameScene extends Phaser.Scene {
     }
     init(): void {
         this.emitterManager = EmitterManager.getInstance(this)
-        this.emitterManager.playConffetiEffect(0, this.sys.canvas.height / 2)
+        // this.emitterManager.playConffetiEffect(0, this.sys.canvas.height / 2)
         this.tweenManager = TweenManager.getInstance(this)
         this.progressBar = new Progressbar(this)
         this.idle = false
         this.progressBar.init()
         // Init variables
         this.canMove = true
+        this.findMove = false
 
         // set background color
         this.cameras.main.setBackgroundColor(0x78aade)
@@ -97,9 +99,11 @@ export class GameScene extends Phaser.Scene {
         if (!this.tileGrid) return
         for (let y = 0; y < this.tileGrid.length; y++) {
             const gameObj = this.tileGrid[y]
-            for (let i = gameObj.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1))
-                ;[gameObj[i], gameObj[j]] = [gameObj[j], gameObj[i]]
+            for (let x = gameObj.length - 1; x > 0; x--) {
+                const j = Math.floor(Math.random() * (x + 1))
+                ;[gameObj[x], gameObj[j]] = [gameObj[j], gameObj[x]]
+                this.emitterManager.setColorEmitter(j, y, gameObj[x].getColor())
+                this.emitterManager.setColorEmitter(x, y, gameObj[j].getColor())
             }
         }
     }
@@ -108,11 +112,8 @@ export class GameScene extends Phaser.Scene {
         if (!this.tileGrid) return
         this.canMove = false
         this.shuffle()
-        for (let y = 0; y < this.tileGrid.length; y++) {
-            for (let x = 0; x < this.tileGrid[y].length; x++) {
-                if (this.tileGrid[y][x]) this.tileGrid[y][x].stopHintEffect()
-            }
-        }
+
+        this.emitterManager.stopHintEffect()
         this.tweenManager.restartTweenPlay(this.tileGrid)
 
         // Selected Tiles
@@ -122,6 +123,7 @@ export class GameScene extends Phaser.Scene {
         this.secondSelectedTile = undefined
 
         this.idle = false
+        this.findMove = false
     }
 
     /**
@@ -132,7 +134,8 @@ export class GameScene extends Phaser.Scene {
     private addTile(x: number, y: number): Tile {
         // Get a random tile
         const randomTileType: string =
-            CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 1)]
+            CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 9)]
+        // CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 1)]
 
         // Return the created tile
         return new Tile({
@@ -213,6 +216,17 @@ export class GameScene extends Phaser.Scene {
                     (secondTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight
                 ][(secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth] =
                     this.firstSelectedTile
+
+                this.emitterManager.setColorEmitter(
+                    (firstTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth,
+                    (firstTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight,
+                    this.secondSelectedTile.getColor()
+                )
+                this.emitterManager.setColorEmitter(
+                    (secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth,
+                    (secondTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight,
+                    this.firstSelectedTile.getColor()
+                )
             }
 
             this.tweenManager.swapTileTween(this.firstSelectedTile, this.secondSelectedTile)
@@ -285,6 +299,7 @@ export class GameScene extends Phaser.Scene {
                     }
                     const tempTile = this.tileGrid[y_tmp - 1][x]
                     this.tileGrid[y][x] = tempTile
+                    this.emitterManager.setColorEmitter(x, y, tempTile?.getColor())
                     ;(this.tileGrid[y_tmp - 1][x] as Tile | undefined) = undefined
 
                     this.tweenManager.resetTileTween(tempTile, y)
@@ -322,6 +337,7 @@ export class GameScene extends Phaser.Scene {
                     if (y == 0) tile.setY(-CONST.tileHeight * (cnt - 0.5))
                     this.tweenManager.fillTileTween(tile, y_tmp)
                     this.tileGrid[y_tmp][x] = tile
+                    this.emitterManager.setColorEmitter(x, y_tmp, tile?.getColor())
                     cnt++
                 }
             }
@@ -340,10 +356,11 @@ export class GameScene extends Phaser.Scene {
         if (!this.tileGrid) return
         // Loop through all the matches and remove the associated tiles
         const prevScore = this.score
+        matches.sort((a, b) => b.length - a.length)
         for (let i = 0; i < matches.length; i++) {
             const tempArr = matches[i]
 
-            this.score += tempArr.length * 100
+            this.score += this.getTotalOverlap(tempArr) * 100
 
             for (let j = 0; j < tempArr.length; j++) {
                 const tile = tempArr[j]
@@ -353,22 +370,46 @@ export class GameScene extends Phaser.Scene {
 
                 // Remove the tile from the theoretical grid
                 if (tilePos.x !== -1 && tilePos.y !== -1) {
-                    this.stopHintEffect()
-                    if (tempArr.length >= 4 && this.firstSelectedTile && this.secondSelectedTile) {
+                    this.emitterManager.stopHintEffect()
+                    this.findMove = false
+                    if (
+                        tempArr.length >= 4 &&
+                        (this.firstSelectedTile || this.secondSelectedTile)
+                    ) {
                         if (tile == this.firstSelectedTile || tile == this.secondSelectedTile) {
                             this.tweenManager.overlapTileTweenPlay(
                                 tempArr.filter((tmp_tile) => tmp_tile != tile),
                                 tile.x,
                                 tile.y
                             )
+                            tile.addTotalOverlap(
+                                this.getTotalOverlap(tempArr.filter((tmp_tile) => tmp_tile != tile))
+                            )
+                        } else {
+                            (this.tileGrid[tilePos.y][tilePos.x] as Tile | undefined) = undefined
+                        }
+                    } else if (tempArr.length >= 4) {
+                        if (j == Math.floor(tempArr.length / 2)) {
+                            this.tweenManager.overlapTileTweenPlay(
+                                tempArr.filter((tmp_tile) => tmp_tile != tile),
+                                tile.x,
+                                tile.y
+                            )
+                            tile.addTotalOverlap(
+                                this.getTotalOverlap(tempArr.filter((tmp_tile) => tmp_tile != tile))
+                            )
                         } else {
                             (this.tileGrid[tilePos.y][tilePos.x] as Tile | undefined) = undefined
                         }
                     } else {
+                        if (tile.getTotalOverlap() >= 5) {
+                            this.removeAllInRow(tilePos.y)
+                            this.removeAllInColumn(tilePos.x)
+                            this.cameras.main.shake(1000, 0.02)
+                            break
+                        }
                         tile.destroy()
-                        // this.stopHintEffect()
-                        tile.updateEmitterPosition()
-                        tile.explode()
+                        this.emitterManager.explodeBoardEmitter(tilePos.x, tilePos.y)
                         ;(this.tileGrid[tilePos.y][tilePos.x] as Tile | undefined) = undefined
                     }
                 }
@@ -476,40 +517,40 @@ export class GameScene extends Phaser.Scene {
     }
 
     hintMove() {
-        if (!this.tileGrid) return
-        let find = false
+        if (!this.tileGrid || this.findMove) return
+        // let find = false
         for (let y = 0; y < this.tileGrid.length; y++) {
-            if (find) break
+            if (this.findMove) break
             for (let x = 0; x < this.tileGrid[y].length; x++) {
-                if (find) break
-                if (!find && y < this.tileGrid.length - 1) {
+                if (this.findMove) break
+                if (!this.findMove && y < this.tileGrid.length - 1) {
                     this.swapTileVertical(y, y + 1, x)
                     if (this.getMatches(this.tileGrid).length) {
-                        find = true
-                        console.log(`(x: ${x},y: ${y}), 1`)
+                        this.findMove = true
                     }
                     this.swapTileVertical(y, y + 1, x)
-                    if (find) {
-                        this.tileGrid[y][x].playHintEffect()
-                        this.tileGrid[y + 1][x].playHintEffect()
+                    if (this.findMove) {
+                        console.log(`(x: ${x},y: ${y}), 1`)
+                        this.emitterManager.playHintEffect(x, y)
+                        this.emitterManager.playHintEffect(x, y + 1)
                     }
                 }
-                if (!find && x < this.tileGrid[0].length - 1) {
+                if (!this.findMove && x < this.tileGrid[0].length - 1) {
                     this.swapTileHorizontal(x, x + 1, y)
                     if (this.getMatches(this.tileGrid).length) {
-                        find = true
-                        console.log(`(x: ${x},y: ${y}), 2`)
+                        this.findMove = true
                     }
                     this.swapTileHorizontal(x, x + 1, y)
-                    if (find) {
-                        this.tileGrid[y][x].playHintEffect()
-                        this.tileGrid[y][x + 1].playHintEffect()
+                    if (this.findMove) {
+                        console.log(`(x: ${x},y: ${y}), 2`)
+                        this.emitterManager.playHintEffect(x, y)
+                        this.emitterManager.playHintEffect(x + 1, y)
                     }
                 }
             }
         }
 
-        if (!find) console.log('No move')
+        if (!this.findMove) console.log('No move')
     }
 
     swapTileVertical(y1: number, y2: number, x: number) {
@@ -536,33 +577,54 @@ export class GameScene extends Phaser.Scene {
         return true
     }
 
-    stopHintEffect() {
-        if (!this.tileGrid) return
-        for (let y = 0; y < this.tileGrid.length; y++) {
-            for (let x = 0; x < this.tileGrid[y].length; x++) {
-                if (this.tileGrid[y][x]) this.tileGrid[y][x].stopHintEffect()
-            }
-        }
-    }
-
     update(_time: number, _delta: number): void {
-        this.emitterManager.update()
+        // this.emitterManager.update()
         if (this.idle) {
-            if (this.score >= 3000) {
-                this.restart()
-                this.progressBar.updateProgreebar(0)
-                this.progressBar.updateScore(this.score, 0)
-                this.score = 0
-            }
+            // if (this.score >= 3000) {
+            //     this.restart()
+            //     this.progressBar.updateProgreebar(0)
+            //     this.progressBar.updateScore(this.score, 0)
+            //     this.score = 0
+            // }
             this.hintButton.setAlpha(1)
             this.shuffleButton.setAlpha(1)
         } else {
             this.hintButton.setAlpha(0.5)
             this.shuffleButton.setAlpha(0.5)
         }
+
+        // if (this.score >= 3000) this.canMove = false
     }
 
     setCanMove(canMove: boolean) {
         this.canMove = canMove
+    }
+
+    getTotalOverlap(tiles: Tile[]) {
+        let res = 0
+        for (const tile of tiles) res += tile.getTotalOverlap() + 1
+        return res
+    }
+
+    removeAllInRow(y: number) {
+        if (!this.tileGrid) return
+        for (let x = 0; x < this.tileGrid[y].length; x++) {
+            if (this.tileGrid[y][x]) {
+                this.tileGrid[y][x].destroy()
+                this.emitterManager.explodeBoardEmitter(x, y)
+                ;(this.tileGrid[y][x] as Tile | undefined) = undefined
+            }
+        }
+    }
+
+    removeAllInColumn(x: number) {
+        if (!this.tileGrid) return
+        for (let y = 0; y < this.tileGrid.length; y++) {
+            if (this.tileGrid[y][x]) {
+                this.tileGrid[y][x].destroy()
+                this.emitterManager.explodeBoardEmitter(x, y)
+                ;(this.tileGrid[y][x] as Tile | undefined) = undefined
+            }
+        }
     }
 }

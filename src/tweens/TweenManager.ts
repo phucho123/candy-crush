@@ -142,6 +142,9 @@ export class TweenManager {
             duration: 700, //200
             repeat: 0,
             yoyo: false,
+            onUpdate: () => {
+                tile.updateTotalOverlayDisplay()
+            },
         })
     }
 
@@ -156,6 +159,9 @@ export class TweenManager {
             onComplete: () => {
                 this.gameScene?.checkMatches()
             },
+            onUpdate: () => {
+                tile.updateTotalOverlayDisplay()
+            },
         })
     }
 
@@ -165,12 +171,12 @@ export class TweenManager {
             x: secondSelectedTile.x,
             y: secondSelectedTile.y,
             rotation: Math.PI * 2,
-            ease: 'Linear',
+            ease: 'Quintic.easeInOut',
             duration: 400,
             repeat: 0,
             yoyo: false,
             onUpdate: () => {
-                firstSelectedTile.updateEmitterPosition()
+                firstSelectedTile.updateTotalOverlayDisplay()
             },
         })
 
@@ -179,7 +185,7 @@ export class TweenManager {
             x: firstSelectedTile.x,
             y: firstSelectedTile.y,
             rotation: Math.PI * 2,
-            ease: 'Linear',
+            ease: 'Quintic.easeInOut',
             duration: 400,
             repeat: 0,
             yoyo: false,
@@ -187,7 +193,7 @@ export class TweenManager {
                 this.gameScene?.checkMatches()
             },
             onUpdate: () => {
-                secondSelectedTile.updateEmitterPosition()
+                secondSelectedTile.updateTotalOverlayDisplay()
             },
         })
     }
@@ -200,6 +206,9 @@ export class TweenManager {
             duration: 500,
             onComplete: () => {
                 for (const tile of tiles) tile.destroy()
+            },
+            onUpdate: () => {
+                for (const tile of tiles) tile.updateTotalOverlayDisplay()
             },
         })
     }

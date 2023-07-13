@@ -1,113 +1,95 @@
 import { IImageConstructor } from '../interfaces/image.interface'
 
 export class Tile extends Phaser.GameObjects.Image {
-    private emitter: Phaser.GameObjects.Particles.ParticleEmitter
     private totalOverlap: number
+    private totalOverlapDisplay: Phaser.GameObjects.Text
+    private color: string
     constructor(aParams: IImageConstructor) {
         super(aParams.scene, aParams.x, aParams.y, aParams.texture, aParams.frame)
 
         // set image settings
         // this.setOrigin(0, 0)
-        this.totalOverlap = 1
+        this.totalOverlap = 0
         this.setDepth(-1)
         this.setInteractive()
 
         this.scene.add.existing(this)
-        let color = 'white'
+        this.color = 'white'
         switch (this.texture.key) {
             case 'cookie1':
-                color = 'yellow'
+                this.color = 'yellow'
                 break
             case 'cookie2':
-                color = 'yellow'
+                this.color = 'yellow'
                 break
             case 'croissant':
-                color = 'yellow'
+                this.color = 'yellow'
                 break
             case 'cupcake':
-                color = 'red'
+                this.color = 'red'
                 break
             case 'donut':
-                color = 'red'
+                this.color = 'red'
                 break
             case 'eclair':
-                color = 'white'
+                this.color = 'white'
                 break
             case 'macaroon':
-                color = 'green'
+                this.color = 'green'
                 break
             case 'pie':
-                color = 'yellow'
+                this.color = 'yellow'
                 break
             case 'poptart1':
-                color = 'blue'
+                this.color = 'blue'
                 break
             case 'poptart2':
-                color = 'white'
+                this.color = 'white'
                 break
             case 'starcookie1':
-                color = 'yellow'
+                this.color = 'yellow'
                 break
             case 'startcookie2':
-                color = 'white'
+                this.color = 'white'
                 break
             default:
                 break
         }
-        this.emitter = this.scene.add
-            .particles(this.x, this.y, 'flares', {
-                frame: [color],
-                lifespan: 500,
-                speed: { min: 100, max: 150 },
-                scale: { start: 0.8, end: 0 },
-                gravityY: 0,
-                blendMode: 'ADD',
-                emitting: false,
-            })
-            .setDepth(-2)
     }
 
-    public explode(): void {
-        this.emitter.explode(32)
+    public addTotalOverlap(number: number) {
+        this.totalOverlap = this.totalOverlap + number
+        if (this.totalOverlap >= 5) {
+            if (!this.totalOverlapDisplay) {
+                this.totalOverlapDisplay = this.scene.add
+                    .text(this.x, this.y, `${this.totalOverlap}`, {
+                        fontSize: '32px',
+                        fontFamily: 'Arial',
+                        color: '#ff0000',
+                    })
+                    .setDepth(10)
+                    .setOrigin(0.5)
+                console.log('hello there')
+            } else {
+                this.totalOverlapDisplay.setText(`${this.totalOverlap}`)
+            }
+        }
     }
 
-    public updateEmitterPosition() {
-        this.emitter.setPosition(this.x, this.y)
+    public getTotalOverlap() {
+        return this.totalOverlap
     }
 
-    public playHintEffect() {
-        this.updateEmitterPosition()
-        this.emitter.setConfig({
-            lifespan: 500,
-            speed: { min: 70, max: 100 },
-            scale: { start: 0.3, end: 0 },
-            gravityY: 0,
-            blendMode: 'ADD',
-            emitting: true,
-        })
+    public destroy() {
+        if (this.totalOverlapDisplay) this.totalOverlapDisplay.destroy()
+        super.destroy()
     }
 
-    public stopHintEffect() {
-        this.emitter.setConfig({
-            lifespan: 500,
-            speed: { min: 100, max: 150 },
-            scale: { start: 0.8, end: 0 },
-            gravityY: 0,
-            blendMode: 'ADD',
-            emitting: false,
-        })
+    public updateTotalOverlayDisplay() {
+        if (this.totalOverlapDisplay) this.totalOverlapDisplay.setPosition(this.x, this.y)
     }
 
-    public overlapTween() {
-        this.scene.add.tween({
-            targets: this,
-            duration: 500,
-            rotation: 2 * Math.PI,
-            repeat: -1,
-        })
+    public getColor() {
+        return this.color
     }
-
-    // public addTotalOverlap(number: number) {
-    //     this.totalOverlap = this.totalOverlap + number
-    // }
 }
