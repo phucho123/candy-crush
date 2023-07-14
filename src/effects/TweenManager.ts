@@ -138,13 +138,13 @@ export class TweenManager {
         this.scene.add.tween({
             targets: tile,
             y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
-            ease: 'back.inout',
-            duration: 700, //200
+            ease: 'bounce',
+            duration: 500, //200 //700
             repeat: 0,
             yoyo: false,
-            onUpdate: () => {
-                tile.updateTotalOverlayDisplay()
-            },
+            // onUpdate: () => {
+            //     tile.updateTotalOverlayDisplay()
+            // },
         })
     }
 
@@ -152,16 +152,16 @@ export class TweenManager {
         this.scene.add.tween({
             targets: tile,
             y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
-            duration: 700, //200
+            duration: 500, //200 //700
             repeat: 0,
             yoyo: false,
-            ease: 'back.inout',
+            ease: 'bounce',
             onComplete: () => {
                 this.gameScene?.checkMatches()
             },
-            onUpdate: () => {
-                tile.updateTotalOverlayDisplay()
-            },
+            // onUpdate: () => {
+            //     tile.updateTotalOverlayDisplay()
+            // },
         })
     }
 
@@ -175,9 +175,9 @@ export class TweenManager {
             duration: 400,
             repeat: 0,
             yoyo: false,
-            onUpdate: () => {
-                firstSelectedTile.updateTotalOverlayDisplay()
-            },
+            // onUpdate: () => {
+            //     firstSelectedTile.updateTotalOverlayDisplay()
+            // },
         })
 
         this.scene.add.tween({
@@ -192,9 +192,9 @@ export class TweenManager {
             onComplete: () => {
                 this.gameScene?.checkMatches()
             },
-            onUpdate: () => {
-                secondSelectedTile.updateTotalOverlayDisplay()
-            },
+            // onUpdate: () => {
+            //     secondSelectedTile.updateTotalOverlayDisplay()
+            // },
         })
     }
 
@@ -206,10 +206,42 @@ export class TweenManager {
             duration: 500,
             onComplete: () => {
                 for (const tile of tiles) tile.destroy()
+                // this.gameScene?.resetTile()
+                // this.gameScene?.fillTile()
+                // this.gameScene?.tileUp()
             },
-            onUpdate: () => {
-                for (const tile of tiles) tile.updateTotalOverlayDisplay()
-            },
+            // onUpdate: () => {
+            //     for (const tile of tiles) tile.updateTotalOverlayDisplay()
+            // },
+        })
+    }
+
+    playHintTween(tile1: Tile, tile2: Tile) {
+        const x1 = tile1.x
+        const y1 = tile1.y
+        const x2 = tile2.x
+        const y2 = tile2.y
+
+        this.gameScene?.setIdle(false)
+
+        this.scene.add.tween({
+            targets: tile1,
+            x: x2,
+            y: y2,
+            duration: 500,
+            yoyo: true,
+            repeat: 2,
+            onComplete: () => this.gameScene?.setIdle(true),
+        })
+
+        this.scene.add.tween({
+            targets: tile2,
+            x: x1,
+            y: y1,
+            duration: 500,
+            yoyo: true,
+            repeat: 2,
+            onComplete: () => this.gameScene?.setIdle(true),
         })
     }
 }

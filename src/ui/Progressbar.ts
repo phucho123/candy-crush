@@ -4,6 +4,11 @@ export class Progressbar extends Phaser.GameObjects.Container {
     private progressbarEmitter: Phaser.GameObjects.Particles.ParticleEmitter
     private scoreDisplay: Phaser.GameObjects.Text
     private hintButton: Phaser.GameObjects.Text
+    private levelDisplay: Phaser.GameObjects.Text
+    private align = 10
+    private maxScore = 10000
+    private level = 1
+
     constructor(scene: Phaser.Scene) {
         super(scene)
     }
@@ -14,11 +19,11 @@ export class Progressbar extends Phaser.GameObjects.Container {
         this.add(this.scene.add.rectangle(0, 0, this.width, this.height, 0x0000ff, 1).setOrigin(0))
         this.setPosition(0, 0)
         this.progressbar = this.scene.add
-            .rectangle(10, 100, 150, 20, 0xffffff)
+            .rectangle(this.align, 100, 150, 20, 0xffffff)
             .setOrigin(0)
             .setDepth(1)
         this.progressbarFill = this.scene.add
-            .rectangle(10, 100, 0, 20, 0x41d8f2)
+            .rectangle(this.align, 100, 0, 20, 0x41d8f2)
             .setOrigin(0)
             .setDepth(1)
         this.scoreDisplay = this.scene.add
@@ -29,7 +34,7 @@ export class Progressbar extends Phaser.GameObjects.Container {
             })
             .setOrigin(0.5, 0)
         this.progressbarEmitter = this.scene.add.particles(
-            10,
+            this.align,
             this.progressbarFill.y + this.progressbarFill.height / 2,
             'flares',
             {
@@ -43,6 +48,13 @@ export class Progressbar extends Phaser.GameObjects.Container {
                 gravityX: -1000,
             }
         )
+        this.levelDisplay = this.scene.add
+            .text(10, 100, 'Level 1', {
+                color: '#ffffff',
+                fontSize: '16px',
+                fontFamily: 'Arial',
+            })
+            .setOrigin(0, 1)
         this.add([this.progressbar, this.progressbarFill])
     }
 
@@ -50,7 +62,7 @@ export class Progressbar extends Phaser.GameObjects.Container {
         this.scene.add.tween({
             targets: this.progressbarFill,
             duration: 1000,
-            width: (percentage / 3000) * 150,
+            width: (percentage / this.maxScore) * 150,
             repeat: 0,
         })
 
@@ -61,7 +73,7 @@ export class Progressbar extends Phaser.GameObjects.Container {
         this.scene.add.tween({
             targets: this.progressbarEmitter,
             duration: 1000,
-            x: (percentage / 3000) * 150 + 10,
+            x: (percentage / this.maxScore) * 150 + this.align,
             repeat: 0,
             onComplete: () => {
                 this.progressbarEmitter.gravityX = -1000
@@ -86,5 +98,15 @@ export class Progressbar extends Phaser.GameObjects.Container {
             yoyo: true,
             duration: 500,
         })
+    }
+
+    levelUp() {
+        this.level++
+        this.maxScore += 1000
+        this.levelDisplay.setText(`Level ${this.level}`)
+    }
+
+    public getMaxScore() {
+        return this.maxScore
     }
 }

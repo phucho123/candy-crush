@@ -20,4 +20,5 @@ export const CONST = {
         'starcookie2',
     ],
     alignY: 144,
+    delta: 7,
 }

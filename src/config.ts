@@ -10,6 +10,13 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent: 'game',
     scene: [BootScene, GameScene],
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 400 },
+            debug: false,
+        },
+    },
     backgroundColor: '#de3412',
     render: { pixelArt: false, antialias: true },
 }

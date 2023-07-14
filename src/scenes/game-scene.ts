@@ -1,9 +1,11 @@
 import { CONST } from '../const/const'
 import { Position } from '../interfaces/myinterface.interface'
+import { ObjectPool } from '../objects/ObjectPool'
 import { Tile } from '../objects/tile'
-import { EmitterManager } from '../tweens/EmitterManager'
-import { TweenManager } from '../tweens/TweenManager'
+import { EmitterManager } from '../effects/EmitterManager'
+import { TweenManager } from '../effects/TweenManager'
 import { Progressbar } from '../ui/Progressbar'
+import { CustomEmitter } from '../effects/CustomEmitter'
 
 export class GameScene extends Phaser.Scene {
     static instance: GameScene | null = null
@@ -19,6 +21,7 @@ export class GameScene extends Phaser.Scene {
 
     private progressBar: Progressbar
     private score = 0
+    private prevScore = 0
     private tweenManager: TweenManager
     private idleTimeout: NodeJS.Timeout
     private idle: boolean
@@ -26,21 +29,29 @@ export class GameScene extends Phaser.Scene {
     private shuffleButton: Phaser.GameObjects.Text
     private emitterManager: EmitterManager
     private findMove: boolean
+    private objectPool: ObjectPool
+    private delta: number
+    private customEmitter: CustomEmitter
 
     constructor() {
         super({
             key: 'GameScene',
         })
         GameScene.instance = this
+        this.delta = CONST.delta
     }
+
     static getIntance() {
         return GameScene.instance
     }
+
     init(): void {
         this.emitterManager = EmitterManager.getInstance(this)
+        this.customEmitter = CustomEmitter.getInstance(this)
         // this.emitterManager.playConffetiEffect(0, this.sys.canvas.height / 2)
         this.tweenManager = TweenManager.getInstance(this)
         this.progressBar = new Progressbar(this)
+        this.objectPool = ObjectPool.getInstance(this)
         this.idle = false
         this.progressBar.init()
         // Init variables
@@ -102,8 +113,8 @@ export class GameScene extends Phaser.Scene {
             for (let x = gameObj.length - 1; x > 0; x--) {
                 const j = Math.floor(Math.random() * (x + 1))
                 ;[gameObj[x], gameObj[j]] = [gameObj[j], gameObj[x]]
-                this.emitterManager.setColorEmitter(j, y, gameObj[x].getColor())
-                this.emitterManager.setColorEmitter(x, y, gameObj[j].getColor())
+                this.emitterManager.setColorEmitter(j, y, gameObj[j].getColor())
+                this.emitterManager.setColorEmitter(x, y, gameObj[x].getColor())
             }
         }
     }
@@ -113,7 +124,7 @@ export class GameScene extends Phaser.Scene {
         this.canMove = false
         this.shuffle()
 
-        this.emitterManager.stopHintEffect()
+        // this.emitterManager.stopHintEffect()
         this.tweenManager.restartTweenPlay(this.tileGrid)
 
         // Selected Tiles
@@ -132,18 +143,20 @@ export class GameScene extends Phaser.Scene {
      * @param y
      */
     private addTile(x: number, y: number): Tile {
-        // Get a random tile
-        const randomTileType: string =
-            CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 9)]
-        // CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 1)]
+        // // Get a random tile
+        // const randomTileType: string =
+        //     CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 9)]
+        // // CONST.candyTypes[Phaser.Math.RND.between(0, CONST.candyTypes.length - 1)]
 
-        // Return the created tile
-        return new Tile({
-            scene: this,
-            x: x * CONST.tileWidth + CONST.tileWidth / 2,
-            y: y * CONST.tileHeight + CONST.tileHeight / 2 + CONST.alignY,
-            texture: randomTileType,
-        })
+        // // Return the created tile
+        // return new Tile({
+        //     scene: this,
+        //     x: x * CONST.tileWidth + CONST.tileWidth / 2,
+        //     y: y * CONST.tileHeight + CONST.tileHeight / 2 + CONST.alignY,
+        //     texture: randomTileType,
+        // })
+
+        return this.objectPool.addTile(x, y)
     }
 
     /**
@@ -208,40 +221,60 @@ export class GameScene extends Phaser.Scene {
 
             // Swap them in our grid with the tiles
             if (this.tileGrid) {
-                this.tileGrid[
+                const x1 = Math.floor((firstTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth)
+                const y1 = Math.floor(
                     (firstTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight
-                ][(firstTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth] =
-                    this.secondSelectedTile
-                this.tileGrid[
+                )
+                const x2 = Math.floor(
+                    (secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth
+                )
+                const y2 = Math.floor(
                     (secondTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight
-                ][(secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth] =
-                    this.firstSelectedTile
+                )
 
-                this.emitterManager.setColorEmitter(
-                    (firstTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth,
-                    (firstTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight,
-                    this.secondSelectedTile.getColor()
-                )
-                this.emitterManager.setColorEmitter(
-                    (secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth,
-                    (secondTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight,
-                    this.firstSelectedTile.getColor()
-                )
+                // this.tileGrid[
+                //     (firstTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight
+                // ][(firstTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth] =
+                //     this.secondSelectedTile
+                // this.tileGrid[
+                //     (secondTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight
+                // ][(secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth] =
+                //     this.firstSelectedTile
+
+                this.tileGrid[y1][x1] = this.secondSelectedTile
+                this.tileGrid[y2][x2] = this.firstSelectedTile
+
+                this.emitterManager.setColorEmitter(x1, y1, this.secondSelectedTile.getColor())
+                this.emitterManager.setColorEmitter(x2, y2, this.firstSelectedTile.getColor())
             }
 
             this.tweenManager.swapTileTween(this.firstSelectedTile, this.secondSelectedTile)
 
             if (this.tileGrid) {
-                this.firstSelectedTile =
-                    this.tileGrid[
-                        (firstTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) /
-                            CONST.tileHeight
-                    ][(firstTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth]
-                this.secondSelectedTile =
-                    this.tileGrid[
-                        (secondTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) /
-                            CONST.tileHeight
-                    ][(secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth]
+                const x1 = Math.floor((firstTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth)
+                const y1 = Math.floor(
+                    (firstTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight
+                )
+                const x2 = Math.floor(
+                    (secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth
+                )
+                const y2 = Math.floor(
+                    (secondTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) / CONST.tileHeight
+                )
+
+                // this.firstSelectedTile =
+                //     this.tileGrid[
+                //         (firstTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) /
+                //             CONST.tileHeight
+                //     ][(firstTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth]
+                // this.secondSelectedTile =
+                //     this.tileGrid[
+                //         (secondTilePosition.y - CONST.tileHeight / 2 - CONST.alignY) /
+                //             CONST.tileHeight
+                //     ][(secondTilePosition.x - CONST.tileWidth / 2) / CONST.tileWidth]
+
+                this.firstSelectedTile = this.tileGrid[y1][x1]
+                this.secondSelectedTile = this.tileGrid[y2][x2]
             }
         }
     }
@@ -250,19 +283,20 @@ export class GameScene extends Phaser.Scene {
         //Call the getMatches function to check for spots where there is
         //a run of three or more tiles in a row
         if (!this.tileGrid) return
+        this.idle = false
         if (this.idleTimeout) {
-            this.idle = false
             this.hintButton.setAlpha(0.5)
             clearTimeout(this.idleTimeout)
         }
 
         this.idleTimeout = setTimeout(() => {
             this.idle = true
-        }, 1300)
+        }, 1100)
         const matches = this.getMatches(this.tileGrid)
 
         //If there are matches, remove them
         if (matches.length > 0) {
+            this.idle = false
             //Remove the tiles
             this.removeTileGroup(matches)
             // Move the tiles currently on the board into their new positions
@@ -277,14 +311,13 @@ export class GameScene extends Phaser.Scene {
             // No match so just swap the tiles back to their original position and reset
             this.swapTiles()
             this.tileUp()
-            this.canMove = true
+            // this.canMove = true
             // if (this.checkTileGridFull()) {
-
             // }
         }
     }
 
-    private resetTile(): void {
+    public resetTile(): void {
         if (!this.tileGrid) return
         // Loop through each column starting from the left
         for (let y = this.tileGrid.length - 1; y > 0; y--) {
@@ -313,7 +346,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private fillTile(): void {
+    public fillTile(): void {
         if (!this.tileGrid) return
         //Check for blank spaces in the grid and add new tiles at that position
         for (let y = 0; y < this.tileGrid.length; y++) {
@@ -344,7 +377,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private tileUp(): void {
+    public tileUp(): void {
         this.tweenManager.selectedTileTweenDestroy(1)
         this.tweenManager.selectedTileTweenDestroy(2)
 
@@ -370,7 +403,7 @@ export class GameScene extends Phaser.Scene {
 
                 // Remove the tile from the theoretical grid
                 if (tilePos.x !== -1 && tilePos.y !== -1) {
-                    this.emitterManager.stopHintEffect()
+                    // this.emitterManager.stopHintEffect()
                     this.findMove = false
                     if (
                         tempArr.length >= 4 &&
@@ -415,7 +448,7 @@ export class GameScene extends Phaser.Scene {
                 }
             }
         }
-        this.progressBar.updateProgreebar(this.score)
+        this.progressBar.updateProgreebar(this.score - this.prevScore)
         this.progressBar.updateScore(prevScore, this.score)
     }
 
@@ -517,6 +550,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     hintMove() {
+        this.findMove = false
         if (!this.tileGrid || this.findMove) return
         // let find = false
         for (let y = 0; y < this.tileGrid.length; y++) {
@@ -531,8 +565,12 @@ export class GameScene extends Phaser.Scene {
                     this.swapTileVertical(y, y + 1, x)
                     if (this.findMove) {
                         console.log(`(x: ${x},y: ${y}), 1`)
-                        this.emitterManager.playHintEffect(x, y)
-                        this.emitterManager.playHintEffect(x, y + 1)
+                        // this.emitterManager.playHintEffect(x, y)
+                        // this.emitterManager.playHintEffect(x, y + 1)
+                        this.tweenManager.playHintTween(
+                            this.tileGrid[y][x],
+                            this.tileGrid[y + 1][x]
+                        )
                     }
                 }
                 if (!this.findMove && x < this.tileGrid[0].length - 1) {
@@ -543,8 +581,12 @@ export class GameScene extends Phaser.Scene {
                     this.swapTileHorizontal(x, x + 1, y)
                     if (this.findMove) {
                         console.log(`(x: ${x},y: ${y}), 2`)
-                        this.emitterManager.playHintEffect(x, y)
-                        this.emitterManager.playHintEffect(x + 1, y)
+                        // this.emitterManager.playHintEffect(x, y)
+                        // this.emitterManager.playHintEffect(x + 1, y)
+                        this.tweenManager.playHintTween(
+                            this.tileGrid[y][x],
+                            this.tileGrid[y][x + 1]
+                        )
                     }
                 }
             }
@@ -578,19 +620,25 @@ export class GameScene extends Phaser.Scene {
     }
 
     update(_time: number, _delta: number): void {
+        this.delta = _delta
         // this.emitterManager.update()
         if (this.idle) {
-            // if (this.score >= 3000) {
-            //     this.restart()
-            //     this.progressBar.updateProgreebar(0)
-            //     this.progressBar.updateScore(this.score, 0)
-            //     this.score = 0
-            // }
+            if (this.score - this.prevScore >= this.progressBar.getMaxScore()) {
+                this.restart()
+                this.progressBar.updateProgreebar(0)
+                this.progressBar.updateScore(this.score, 0)
+                // this.score = 0
+                this.progressBar.levelUp()
+                this.customEmitter.playConfettiEffect()
+                this.prevScore = this.score
+            }
             this.hintButton.setAlpha(1)
             this.shuffleButton.setAlpha(1)
+            this.canMove = true
         } else {
             this.hintButton.setAlpha(0.5)
             this.shuffleButton.setAlpha(0.5)
+            this.canMove = false
         }
 
         // if (this.score >= 3000) this.canMove = false
@@ -598,6 +646,10 @@ export class GameScene extends Phaser.Scene {
 
     setCanMove(canMove: boolean) {
         this.canMove = canMove
+    }
+
+    setIdle(idle: boolean) {
+        this.idle = idle
     }
 
     getTotalOverlap(tiles: Tile[]) {
