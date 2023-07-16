@@ -85,7 +85,7 @@ export class Confetti extends Phaser.GameObjects.Image {
         } else if (this.body.acceleration.x * this.dir > 0) {
             this.body.setAccelerationX(this.body.acceleration.x + a_x)
         } else if (this.body.acceleration.x == 0) {
-            this.alpha = Math.max(this.alpha - 0.004, 0)
+            this.alpha = Math.max(this.alpha - 0.005, 0)
         }
 
         this.body.setAccelerationY(Math.max(0, this.body.acceleration.y + a_y))

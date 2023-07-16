@@ -5,6 +5,7 @@ export class Tile extends Phaser.GameObjects.Image {
     // private totalOverlapDisplay: Phaser.GameObjects.Text
     private color: string
     private tween: Phaser.Tweens.Tween
+    private overlap: number
     constructor(aParams: IImageConstructor) {
         super(aParams.scene, aParams.x, aParams.y, aParams.texture, aParams.frame)
 
@@ -39,6 +40,7 @@ export class Tile extends Phaser.GameObjects.Image {
         if (this.totalOverlap >= 5 && !this.tween) {
             this.tween = this.scene.add.tween({
                 targets: this,
+                scale: 0.8,
                 duration: 500,
                 yoyo: true,
                 alpha: 0.1,

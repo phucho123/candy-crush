@@ -8,7 +8,7 @@ export class CustomEmitter {
     constructor(scene: Phaser.Scene) {
         this.scene = scene
         this.init()
-        this.scene.input.on('pointerdown', () => this.playConfettiEffect())
+        // this.scene.input.on('pointerdown', () => this.playConfettiEffect())
     }
 
     static getInstance(scene: Phaser.Scene) {

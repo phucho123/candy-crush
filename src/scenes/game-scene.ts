@@ -23,7 +23,7 @@ export class GameScene extends Phaser.Scene {
     private score = 0
     private prevScore = 0
     private tweenManager: TweenManager
-    private idleTimeout: NodeJS.Timeout
+    private idleTimeout: Phaser.Time.Timeline
     private idle: boolean
     private hintButton: Phaser.GameObjects.Text
     private shuffleButton: Phaser.GameObjects.Text
@@ -32,6 +32,7 @@ export class GameScene extends Phaser.Scene {
     private objectPool: ObjectPool
     private delta: number
     private customEmitter: CustomEmitter
+    private matchesTimeout: Phaser.Time.Timeline
 
     constructor() {
         super({
@@ -49,11 +50,12 @@ export class GameScene extends Phaser.Scene {
         this.emitterManager = EmitterManager.getInstance(this)
         this.customEmitter = CustomEmitter.getInstance(this)
         // this.emitterManager.playConffetiEffect(0, this.sys.canvas.height / 2)
-        this.tweenManager = TweenManager.getInstance(this)
+
         this.progressBar = new Progressbar(this)
+        this.tweenManager = TweenManager.getInstance(this)
+
         this.objectPool = ObjectPool.getInstance(this)
         this.idle = false
-        this.progressBar.init()
         // Init variables
         this.canMove = true
         this.findMove = false
@@ -77,6 +79,8 @@ export class GameScene extends Phaser.Scene {
 
         // Check if matches on the start
         // this.checkMatches()
+
+        this.tweenManager.playLevelUpEffect()
     }
 
     debug() {
@@ -122,6 +126,7 @@ export class GameScene extends Phaser.Scene {
     restart() {
         if (!this.tileGrid) return
         this.canMove = false
+        this.idle = false
         this.shuffle()
 
         // this.emitterManager.stopHintEffect()
@@ -133,7 +138,6 @@ export class GameScene extends Phaser.Scene {
         this.firstSelectedTile = undefined
         this.secondSelectedTile = undefined
 
-        this.idle = false
         this.findMove = false
     }
 
@@ -195,6 +199,12 @@ export class GameScene extends Phaser.Scene {
                     if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
                         this.canMove = false
                         this.swapTiles()
+                    } else {
+                        this.tweenManager.selectedTileTweenDestroy(2)
+                        this.tweenManager.selectedTileTweenDestroy(1)
+                        this.firstSelectedTile = gameobject
+                        this.tweenManager.selectedTileTweenPlay(this.firstSelectedTile, 1)
+                        this.secondSelectedTile = undefined
                     }
                 }
             }
@@ -283,30 +293,52 @@ export class GameScene extends Phaser.Scene {
         //Call the getMatches function to check for spots where there is
         //a run of three or more tiles in a row
         if (!this.tileGrid) return
-        this.idle = false
-        if (this.idleTimeout) {
-            this.hintButton.setAlpha(0.5)
-            clearTimeout(this.idleTimeout)
-        }
 
-        this.idleTimeout = setTimeout(() => {
-            this.idle = true
-        }, 1100)
+        this.setIdle(false)
+
+        if (this.idleTimeout) {
+            // this.hintButton.setAlpha(0.5)
+            this.idleTimeout.reset()
+        } else
+            this.idleTimeout = this.add.timeline({
+                at: 1100,
+                run: () => {
+                    console.log('hello there')
+                    this.setIdle(true)
+                },
+            })
+
         const matches = this.getMatches(this.tileGrid)
 
         //If there are matches, remove them
         if (matches.length > 0) {
-            this.idle = false
+            // this.setIdle(false)
+            // this.setIdle(false)
             //Remove the tiles
             this.removeTileGroup(matches)
             // Move the tiles currently on the board into their new positions
-            setTimeout(() => {
-                this.resetTile()
-                //Fill the board with new tiles wherever there is an empty spot
-                this.fillTile()
-                this.tileUp()
-                // this.checkMatches()
-            }, 500)
+            // setTimeout(() => {
+            //     this.resetTile()
+            //     //Fill the board with new tiles wherever there is an empty spot
+            //     this.fillTile()
+            //     this.tileUp()
+            //     // this.checkMatches()
+            // }, 500)
+
+            if (this.matchesTimeout) this.matchesTimeout.reset()
+            else
+                this.matchesTimeout = this.add
+                    .timeline([
+                        {
+                            at: 500,
+                            run: () => {
+                                this.resetTile()
+                                this.fillTile()
+                                this.tileUp()
+                            },
+                        },
+                    ])
+                    .play()
         } else {
             // No match so just swap the tiles back to their original position and reset
             this.swapTiles()
@@ -389,7 +421,7 @@ export class GameScene extends Phaser.Scene {
         if (!this.tileGrid) return
         // Loop through all the matches and remove the associated tiles
         const prevScore = this.score
-        matches.sort((a, b) => b.length - a.length)
+        // matches.sort((a, b) => b.length - a.length)
         for (let i = 0; i < matches.length; i++) {
             const tempArr = matches[i]
 

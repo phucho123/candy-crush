@@ -1,6 +1,8 @@
 import { CONST } from '../const/const'
 import { Tile } from '../objects/tile'
 import { GameScene } from '../scenes/game-scene'
+import { CustomEmitter } from './CustomEmitter'
+import { LevelupPopup } from './LevelupPopup'
 
 export class TweenManager {
     private scene: Phaser.Scene
@@ -10,11 +12,15 @@ export class TweenManager {
     private firstSelectedTileTween: Phaser.Tweens.Tween
     private secondSelectedTileTween: Phaser.Tweens.Tween
     private gameObj: Tile[]
+    private levelupPopup: LevelupPopup
+    private customEmitter: CustomEmitter
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene
         this.gameScene = GameScene.getIntance()
         this.gameObj = [] as Tile[]
+        this.levelupPopup = LevelupPopup.getInstance(this.scene)
+        this.customEmitter = CustomEmitter.getInstance(this.scene)
     }
 
     static getInstance(scene: Phaser.Scene) {
@@ -76,7 +82,7 @@ export class TweenManager {
                                     duration: 1000,
                                     onComplete: () => {
                                         this.gameScene?.checkMatches()
-                                        this.gameScene?.setCanMove(true)
+                                        // this.gameScene?.setCanMove(true)
                                     },
                                 })
                             } else {
@@ -157,6 +163,7 @@ export class TweenManager {
             yoyo: false,
             ease: 'bounce',
             onComplete: () => {
+                // this.gameScene?.setIdle(true)
                 this.gameScene?.checkMatches()
             },
             // onUpdate: () => {
@@ -190,6 +197,7 @@ export class TweenManager {
             repeat: 0,
             yoyo: false,
             onComplete: () => {
+                this.gameScene?.setIdle(true)
                 this.gameScene?.checkMatches()
             },
             // onUpdate: () => {
@@ -206,9 +214,6 @@ export class TweenManager {
             duration: 500,
             onComplete: () => {
                 for (const tile of tiles) tile.destroy()
-                // this.gameScene?.resetTile()
-                // this.gameScene?.fillTile()
-                // this.gameScene?.tileUp()
             },
             // onUpdate: () => {
             //     for (const tile of tiles) tile.updateTotalOverlayDisplay()
@@ -243,5 +248,24 @@ export class TweenManager {
             repeat: 2,
             onComplete: () => this.gameScene?.setIdle(true),
         })
+    }
+
+    playLevelUpEffect() {
+        this.scene.add.tween({
+            targets: this.levelupPopup,
+            duration: 500,
+            ease: 'back',
+            x: this.scene.sys.canvas.width / 2,
+        })
+
+        this.scene.add.tween({
+            targets: this.levelupPopup,
+            delay: 1500,
+            alpha: 0,
+            duration: 500,
+            ease: 'back',
+            y: -200,
+        })
+        this.customEmitter.playConfettiEffect()
     }
 }

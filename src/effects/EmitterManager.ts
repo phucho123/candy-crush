@@ -5,10 +5,12 @@ export class EmitterManager {
     private scene: Phaser.Scene
     private conffetiEmitter: Phaser.GameObjects.Particles.ParticleEmitter
     private boardEmitter: Phaser.GameObjects.Particles.ParticleEmitter[][]
+
     // private hintPosition: number[]
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene
+
         // this.hintPosition = []
         this.conffetiEmitter = this.scene.add
             .particles(0, 0, 'flares', {
@@ -86,25 +88,6 @@ export class EmitterManager {
     explodeBoardEmitter(x: number, y: number) {
         this.boardEmitter[y][x].explode(32)
     }
-
-    // public playHintEffect(x: number, y: number) {
-    //     if (this.hintPosition.length >= 4) return
-    //     this.boardEmitter[y][x].frequency = 0
-    //     this.boardEmitter[y][x].start()
-    //     this.hintPosition.push(x, y)
-    // }
-
-    // public stopHintEffect() {
-    //     if (this.hintPosition.length <= 0) return
-    //     for (let y = 0; y < CONST.gridHeight; y++) {
-    //         for (let x = 0; x < CONST.gridWidth; x++) {
-    //             this.boardEmitter[y][x].stop()
-    //         }
-    //     }
-    //     this.boardEmitter[this.hintPosition[1]][this.hintPosition[0]].stop()
-    //     this.boardEmitter[this.hintPosition[3]][this.hintPosition[2]].stop()
-    //     this.hintPosition.splice(0, 4)
-    // }
 
     public setColorEmitter(x: number, y: number, color: string) {
         this.boardEmitter[y][x].setConfig({
