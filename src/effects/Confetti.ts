@@ -6,10 +6,12 @@ export class Confetti extends Phaser.GameObjects.Image {
     private scaleDir = -1
     private dir = -1
     private colors = ['red', 'green', 'yellow', 'blue']
+    private delta: number
 
     constructor(scene: Phaser.Scene) {
-        console.log('Create new confitti')
         super(scene, 0, 0, '')
+        console.log('Create new confitti')
+        this.delta = 1
 
         this.setTexture(this.colors[Phaser.Math.Between(0, 3)])
 
@@ -59,7 +61,8 @@ export class Confetti extends Phaser.GameObjects.Image {
     }
 
     update(time: number, delta: number) {
-        this.sizeX += (this.scaleDir * 0.03 * delta) / CONST.delta
+        this.delta = delta / CONST.delta
+        this.sizeX += this.scaleDir * 0.03 * this.delta
         if (this.sizeX <= 0 && this.scaleDir < 0) {
             this.sizeX = 0
             this.scaleDir = 1
@@ -68,7 +71,7 @@ export class Confetti extends Phaser.GameObjects.Image {
             this.scaleDir = -1
         }
 
-        this.setRotation((0.007 * delta) / CONST.delta + this.rotation)
+        this.setRotation(0.007 * this.delta + this.rotation)
         this.scaleX = this.sizeX * this.scale
         // F_x = 0.5 * ρ * A * Cd * v²_x
         // F_y = 0.5 * ρ * A * Cd * v²_y

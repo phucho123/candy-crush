@@ -1,17 +1,19 @@
 import { IImageConstructor } from '../interfaces/image.interface'
 
 export class Tile extends Phaser.GameObjects.Image {
-    private totalOverlap: number
     // private totalOverlapDisplay: Phaser.GameObjects.Text
     private color: string
-    private tween: Phaser.Tweens.Tween
+    private matches4Tween: Phaser.Tweens.Tween
+    private matches5Tween: Phaser.Tweens.Tween
     private overlap: number
+    private fx: Phaser.FX.Glow
     constructor(aParams: IImageConstructor) {
         super(aParams.scene, aParams.x, aParams.y, aParams.texture, aParams.frame)
 
         // set image settings
         // this.setOrigin(0, 0)
-        this.totalOverlap = 0
+        // this.totalOverlap = 0
+        this.overlap = 0
         this.setDepth(-1)
         this.setInteractive()
 
@@ -20,51 +22,55 @@ export class Tile extends Phaser.GameObjects.Image {
         this.scene.add.existing(this)
     }
 
-    public addTotalOverlap(number: number) {
-        this.totalOverlap = this.totalOverlap + number
-        // if (this.totalOverlap >= 5) {
-        //     if (!this.totalOverlapDisplay) {
-        //         this.totalOverlapDisplay = this.scene.add
-        //             .text(this.x, this.y, `${this.totalOverlap}`, {
-        //                 fontSize: '32px',
-        //                 fontFamily: 'Arial',
-        //                 color: '#ff0000',
-        //             })
-        //             .setDepth(10)
-        //             .setOrigin(0.5)
-        //         console.log('hello there')
-        //     } else {
-        //         this.totalOverlapDisplay.setText(`${this.totalOverlap}`)
-        //     }
-        // }
-        if (this.totalOverlap >= 5 && !this.tween) {
-            this.tween = this.scene.add.tween({
-                targets: this,
-                scale: 0.8,
-                duration: 500,
-                yoyo: true,
-                alpha: 0.1,
-                repeat: -1,
-            })
+    public setOverlap(overlap: number) {
+        this.overlap = overlap
+        if (this.overlap >= 4) {
+            if (!this.matches4Tween || this.matches4Tween.isDestroyed())
+                this.matches4Tween = this.scene.add.tween({
+                    targets: this,
+                    duration: 500,
+                    yoyo: true,
+                    alpha: 0.1,
+                    repeat: -1,
+                    ease: 'sine.inout',
+                })
+        }
+
+        if (this.overlap >= 5) {
+            this.setTexture('bomb')
+            if (this.preFX) {
+                this.preFX.setPadding(50)
+                this.fx = this.preFX.addGlow()
+                if (!this.matches5Tween || this.matches5Tween.isDestroyed())
+                    this.matches5Tween = this.scene.tweens.add({
+                        targets: this.fx,
+                        outerStrength: 20,
+                        yoyo: true,
+                        loop: -1,
+                        ease: 'sine.inout',
+                    })
+            }
         }
     }
 
-    public getTotalOverlap() {
-        return this.totalOverlap
+    public getOverlap() {
+        return this.overlap
     }
 
     public destroy() {
-        if (this.tween) this.tween.destroy()
-        // if (this.totalOverlapDisplay) this.totalOverlapDisplay.destroy()
-        // super.destroy()
-        this.setAlpha(0)
-        // this.setActive(false)
-        this.totalOverlap = 0
+        this.setActive(false)
+        this.setVisible(false)
+        this.overlap = 0
+        if (this.matches4Tween) this.matches4Tween.destroy()
+        if (this.matches5Tween) {
+            this.fx.destroy()
+            this.matches5Tween.destroy()
+        }
     }
 
-    // public updateTotalOverlayDisplay() {
-    //     if (this.totalOverlapDisplay) this.totalOverlapDisplay.setPosition(this.x, this.y)
-    // }
+    public isDestroyed() {
+        return !this.active
+    }
 
     public getColor() {
         return this.color

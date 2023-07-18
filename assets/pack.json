@@ -91,6 +91,11 @@
         "type": "image",
         "key": "levelup",
         "url": "./assets/images/levelup.png"
+      },
+      {
+        "type": "image",
+        "key": "bomb",
+        "url": "./assets/images/bombcolor.png"
       }
     ]
   }

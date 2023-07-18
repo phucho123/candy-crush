@@ -82,7 +82,6 @@ export class TweenManager {
                                     duration: 1000,
                                     onComplete: () => {
                                         this.gameScene?.checkMatches()
-                                        // this.gameScene?.setCanMove(true)
                                     },
                                 })
                             } else {
@@ -107,18 +106,18 @@ export class TweenManager {
             this.selectedTileTweenDestroy(1)
             this.firstSelectedTileTween = this.scene.add.tween({
                 targets: tile,
-                scale: 1.5,
+                scale: 1.2,
                 yoyo: true,
-                duration: 500,
+                duration: 300,
                 repeat: -1,
             })
         } else if (number == 2) {
             this.selectedTileTweenDestroy(2)
             this.secondSelectedTileTween = this.scene.add.tween({
                 targets: tile,
-                scale: 1.5,
+                scale: 1.2,
                 yoyo: true,
-                duration: 500,
+                duration: 300,
                 repeat: -1,
             })
         }
@@ -145,7 +144,7 @@ export class TweenManager {
             targets: tile,
             y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
             ease: 'bounce',
-            duration: 500, //200 //700
+            duration: 300, //200 //700
             repeat: 0,
             yoyo: false,
             // onUpdate: () => {
@@ -158,7 +157,7 @@ export class TweenManager {
         this.scene.add.tween({
             targets: tile,
             y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
-            duration: 500, //200 //700
+            duration: 300, //200 //700
             repeat: 0,
             yoyo: false,
             ease: 'bounce',
@@ -179,7 +178,7 @@ export class TweenManager {
             y: secondSelectedTile.y,
             rotation: Math.PI * 2,
             ease: 'Quintic.easeInOut',
-            duration: 400,
+            duration: 300,
             repeat: 0,
             yoyo: false,
             // onUpdate: () => {
@@ -193,11 +192,11 @@ export class TweenManager {
             y: firstSelectedTile.y,
             rotation: Math.PI * 2,
             ease: 'Quintic.easeInOut',
-            duration: 400,
+            duration: 300,
             repeat: 0,
             yoyo: false,
             onComplete: () => {
-                this.gameScene?.setIdle(true)
+                // this.gameScene?.setIdle(true)
                 this.gameScene?.checkMatches()
             },
             // onUpdate: () => {
@@ -211,13 +210,12 @@ export class TweenManager {
             targets: tiles,
             x: x,
             y: y,
-            duration: 500,
+            duration: 300,
             onComplete: () => {
-                for (const tile of tiles) tile.destroy()
+                for (const tile of tiles) {
+                    tile.destroy()
+                }
             },
-            // onUpdate: () => {
-            //     for (const tile of tiles) tile.updateTotalOverlayDisplay()
-            // },
         })
     }
 
@@ -233,7 +231,7 @@ export class TweenManager {
             targets: tile1,
             x: x2,
             y: y2,
-            duration: 500,
+            duration: 300,
             yoyo: true,
             repeat: 2,
             onComplete: () => this.gameScene?.setIdle(true),
@@ -243,19 +241,21 @@ export class TweenManager {
             targets: tile2,
             x: x1,
             y: y1,
-            duration: 500,
+            duration: 300,
             yoyo: true,
             repeat: 2,
             onComplete: () => this.gameScene?.setIdle(true),
         })
     }
 
-    playLevelUpEffect() {
+    playLevelUpEffect(level: number, score: number) {
+        this.levelupPopup.resetPosition()
+        this.levelupPopup.setContent(level, score)
         this.scene.add.tween({
             targets: this.levelupPopup,
             duration: 500,
             ease: 'back',
-            x: this.scene.sys.canvas.width / 2,
+            x: { from: -100, to: this.scene.sys.canvas.width / 2 },
         })
 
         this.scene.add.tween({
@@ -266,6 +266,5 @@ export class TweenManager {
             ease: 'back',
             y: -200,
         })
-        this.customEmitter.playConfettiEffect()
     }
 }

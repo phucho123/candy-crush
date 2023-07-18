@@ -1,38 +1,16 @@
 import { CONST } from '../const/const'
+import { CustomEmitter } from './CustomEmitter'
 
 export class EmitterManager {
     static instance: EmitterManager | null = null
     private scene: Phaser.Scene
-    private conffetiEmitter: Phaser.GameObjects.Particles.ParticleEmitter
     private boardEmitter: Phaser.GameObjects.Particles.ParticleEmitter[][]
-
-    // private hintPosition: number[]
+    private customEmitter: CustomEmitter
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene
-
-        // this.hintPosition = []
-        this.conffetiEmitter = this.scene.add
-            .particles(0, 0, 'flares', {
-                frame: ['red', 'blue', 'yellow'],
-                lifespan: 3000,
-                speedX: { min: 100, max: 250 },
-                // speedX: 500,
-                scale: { start: 0.3, end: 0.3, ease: 'power2' },
-                rotate: { start: 0, end: 360 },
-                angle: { min: 300, max: 330 },
-                gravityY: 200,
-                emitting: false,
-            })
-            .setDepth(-2)
-        // const tmp = this.conffetiEmitter
-        // if (tmp) {
-        //     const tmp2 = tmp.body
-        //     if (tmp2) tmp2.mass = 10
-        // }
-        // this.conffetiEmitter.speedX = 1000
-        // this.conffetiEmitter.speedY = -200
         this.createBoardEmitter()
+        this.customEmitter = CustomEmitter.getInstance(this.scene)
     }
 
     static getInstance(scene: Phaser.Scene) {
@@ -40,23 +18,8 @@ export class EmitterManager {
         return EmitterManager.instance
     }
 
-    playConffetiEffect(x: number, y: number) {
-        this.conffetiEmitter.setPosition(x, y)
-        this.conffetiEmitter.explode(32)
-    }
-
     update() {
-        const m = 10 as number
-        const g = this.conffetiEmitter.gravityY as number
-        const p = 0.0001
-        const a = this.conffetiEmitter.scale as number
-        const Cd = -0.00001
-        const v_x = this.conffetiEmitter.speedX as number
-        const v_y = this.conffetiEmitter.speedY as number
-        const v_x_after = Math.sqrt(Math.pow(v_x, 2) + (2 * m * g) / (p * a * Cd))
-        const v_y_after = Math.sqrt(Math.pow(v_y, 2) + (2 * m * g) / (p * a * Cd))
-        this.conffetiEmitter.speedX = v_x_after
-        this.conffetiEmitter.speedY = v_y_after
+        ///
     }
 
     createBoardEmitter() {
@@ -71,7 +34,7 @@ export class EmitterManager {
                         'flares',
                         {
                             frame: ['white'],
-                            lifespan: 500,
+                            lifespan: 300,
                             speed: { min: 100, max: 150 },
                             scale: { start: 0.8, end: 0 },
                             gravityY: 0,
@@ -86,18 +49,22 @@ export class EmitterManager {
     }
 
     explodeBoardEmitter(x: number, y: number) {
-        this.boardEmitter[y][x].explode(32)
+        this.boardEmitter[y][x].explode(5)
     }
 
     public setColorEmitter(x: number, y: number, color: string) {
         this.boardEmitter[y][x].setConfig({
             frame: [color],
-            lifespan: 500,
+            lifespan: 300,
             speed: { min: 100, max: 150 },
             scale: { start: 0.8, end: 0 },
             gravityY: 0,
             blendMode: 'ADD',
             emitting: false,
         })
+    }
+
+    playConfettiEffect() {
+        this.customEmitter.playConfettiEffect()
     }
 }

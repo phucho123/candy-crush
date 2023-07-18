@@ -26,6 +26,7 @@ export class LevelupPopup extends Phaser.GameObjects.Container {
         this.add(this.levelupImage)
         this.add(this.levelDisplay)
         this.add(this.scoreDisplay)
+        this.setAlpha(0)
 
         this.setPosition(-100, this.scene.sys.canvas.height / 2)
         this.scene.add.existing(this)
@@ -42,6 +43,7 @@ export class LevelupPopup extends Phaser.GameObjects.Container {
     }
 
     public resetPosition() {
+        this.setAlpha(1)
         this.setPosition(-100, this.scene.sys.canvas.height / 2)
     }
 }
