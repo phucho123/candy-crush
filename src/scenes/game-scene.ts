@@ -585,7 +585,44 @@ export class GameScene extends Phaser.Scene {
     hintMove() {
         this.findMove = false
         if (!this.tileGrid || this.findMove) return
-        for (let y = 0; y < this.tileGrid.length; y++) {
+        const pivot = Phaser.Math.Between(1, CONST.gridHeight - 1)
+        for (let y = pivot; y >= 0; y--) {
+            if (this.findMove) break
+            for (let x = 0; x < this.tileGrid[y].length; x++) {
+                if (this.findMove) break
+                if (!this.findMove && y < this.tileGrid.length - 1) {
+                    this.swapTileVertical(y, y + 1, x)
+                    if (this.getMatches(this.tileGrid).length) {
+                        this.findMove = true
+                    }
+                    this.swapTileVertical(y, y + 1, x)
+                    if (this.findMove) {
+                        console.log(`(x: ${x},y: ${y}), 1`)
+                        this.tweenManager.playHintTween(
+                            this.tileGrid[y][x],
+                            this.tileGrid[y + 1][x]
+                        )
+                    }
+                }
+                if (!this.findMove && x < this.tileGrid[0].length - 1) {
+                    this.swapTileHorizontal(x, x + 1, y)
+                    if (this.getMatches(this.tileGrid).length) {
+                        this.findMove = true
+                    }
+                    this.swapTileHorizontal(x, x + 1, y)
+                    if (this.findMove) {
+                        console.log(`(x: ${x},y: ${y}), 2`)
+                        this.tweenManager.playHintTween(
+                            this.tileGrid[y][x],
+                            this.tileGrid[y][x + 1]
+                        )
+                    }
+                }
+            }
+        }
+
+        if (this.findMove) return
+        for (let y = pivot + 1; y < this.tileGrid.length; y++) {
             if (this.findMove) break
             for (let x = 0; x < this.tileGrid[y].length; x++) {
                 if (this.findMove) break
