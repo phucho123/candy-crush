@@ -20,7 +20,7 @@ export class Confetti extends Phaser.GameObjects.Image {
         this.body.setMass(1)
     }
 
-    fire(dir: number) {
+    public fire(dir: number) {
         this.setAlpha(1)
         this.dir = dir
         if (this.dir == 1) {
@@ -52,7 +52,7 @@ export class Confetti extends Phaser.GameObjects.Image {
         this.sizeX = Phaser.Math.Between(1, 9) / 10
     }
 
-    update(time: number, delta: number) {
+    public update(time: number, delta: number) {
         this.delta = delta / CONST.delta
         this.sizeX += this.scaleDir * 0.03 * this.delta
         if (this.sizeX <= 0 && this.scaleDir < 0) {
@@ -65,11 +65,10 @@ export class Confetti extends Phaser.GameObjects.Image {
 
         this.setRotation(0.007 * this.delta + this.rotation)
         this.scaleX = this.sizeX * this.scale
-        // F_x = 0.5 * ρ * A * Cd * v²_x
-        // F_y = 0.5 * ρ * A * Cd * v²_y
+
         const c = -this.dir * 0.0035
-        const a_x = (0.5 * c * Math.pow(this.body.velocity.x, 2)) / 1
-        const a_y = -(0.5 * Math.abs(c) * Math.pow(this.body.velocity.y, 2)) / 1
+        const a_x = (0.5 * c * Math.pow(this.body.velocity.x, 2)) / this.body.mass
+        const a_y = -(0.5 * Math.abs(c) * Math.pow(this.body.velocity.y, 2)) / this.body.mass
 
         if (
             this.body.acceleration.x * this.dir < 0 &&

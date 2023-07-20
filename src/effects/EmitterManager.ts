@@ -18,11 +18,11 @@ export class EmitterManager {
         return EmitterManager.instance
     }
 
-    update() {
+    public update() {
         ///
     }
 
-    createBoardEmitter() {
+    public createBoardEmitter() {
         this.boardEmitter = []
         for (let y = 0; y < CONST.gridHeight; y++) {
             this.boardEmitter[y] = []
@@ -34,7 +34,7 @@ export class EmitterManager {
                         'flares',
                         {
                             frame: ['white'],
-                            lifespan: 300,
+                            lifespan: 300, //300
                             speed: { min: 100, max: 150 },
                             scale: { start: 0.8, end: 0 },
                             gravityY: 0,
@@ -48,14 +48,14 @@ export class EmitterManager {
         }
     }
 
-    explodeBoardEmitter(x: number, y: number) {
+    public explodeBoardEmitter(x: number, y: number) {
         this.boardEmitter[y][x].explode(5)
     }
 
     public setColorEmitter(x: number, y: number, color: string) {
         this.boardEmitter[y][x].setConfig({
             frame: [color],
-            lifespan: 300,
+            lifespan: 300, //300
             speed: { min: 100, max: 150 },
             scale: { start: 0.8, end: 0 },
             gravityY: 0,
@@ -64,7 +64,11 @@ export class EmitterManager {
         })
     }
 
-    playConfettiEffect() {
+    public playConfettiEffect() {
         this.customEmitter.playConfettiEffect()
+        // this.scene.add.particles(200, 200, 'red', {
+        //     maxParticles: 100,
+        //     gravityY: 500,
+        // })
     }
 }
