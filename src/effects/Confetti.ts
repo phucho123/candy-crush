@@ -20,7 +20,7 @@ export class Confetti extends Phaser.GameObjects.Image {
         this.body.setMass(1)
     }
 
-    public fire(dir: number) {
+    public fire(dir: number): void {
         this.setAlpha(1)
         this.dir = dir
         if (this.dir == 1) {
@@ -52,7 +52,7 @@ export class Confetti extends Phaser.GameObjects.Image {
         this.sizeX = Phaser.Math.Between(1, 9) / 10
     }
 
-    public update(time: number, delta: number) {
+    public update(time: number, delta: number): void {
         this.delta = delta / CONST.delta
         this.sizeX += this.scaleDir * 0.03 * this.delta
         if (this.sizeX <= 0 && this.scaleDir < 0) {

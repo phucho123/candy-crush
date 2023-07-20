@@ -20,7 +20,7 @@ export class Tile extends Phaser.GameObjects.Image {
         this.scene.add.existing(this)
     }
 
-    public setOverlap(overlap: number) {
+    public setOverlap(overlap: number): void {
         this.overlap = overlap
         if (this.overlap >= 4) {
             if (!this.matches4Tween || this.matches4Tween.isDestroyed())
@@ -51,11 +51,11 @@ export class Tile extends Phaser.GameObjects.Image {
         }
     }
 
-    public getOverlap() {
+    public getOverlap(): number {
         return this.overlap
     }
 
-    public destroy() {
+    public destroy(): void {
         this.setActive(false)
         this.setVisible(false)
         this.overlap = 0
@@ -66,15 +66,15 @@ export class Tile extends Phaser.GameObjects.Image {
         }
     }
 
-    public isDestroyed() {
+    public isDestroyed(): boolean {
         return !this.active
     }
 
-    public getColor() {
+    public getColor(): string {
         return this.color
     }
 
-    public setColor() {
+    public setColor(): void {
         this.color = 'white'
         switch (this.texture.key) {
             case 'cookie1':

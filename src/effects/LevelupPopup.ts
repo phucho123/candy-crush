@@ -23,16 +23,16 @@ export class LevelupPopup extends Phaser.GameObjects.Container {
         this.scene.add.existing(this)
     }
 
-    static getInstance(scene: Phaser.Scene) {
+    static getInstance(scene: Phaser.Scene): LevelupPopup {
         if (!LevelupPopup.instance) LevelupPopup.instance = new LevelupPopup(scene)
         return LevelupPopup.instance
     }
 
-    public setContent(level: number) {
+    public setContent(level: number): void {
         this.levelDisplay.setText(`${level}`)
     }
 
-    public resetPosition() {
+    public resetPosition(): void {
         this.setAlpha(1)
         this.setPosition(this.scene.sys.canvas.width / 2, 1000)
     }

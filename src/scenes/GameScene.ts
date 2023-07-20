@@ -98,7 +98,7 @@ export class GameScene extends Phaser.Scene {
         // this.checkMatches()
     }
 
-    private debug() {
+    private debug(): void {
         this.shuffleButton = this.add
             .text(this.sys.canvas.width - 10, 50, 'Shuffle', {
                 color: '#ffffff',
@@ -125,7 +125,7 @@ export class GameScene extends Phaser.Scene {
             })
     }
 
-    private shuffle() {
+    private shuffle(): void {
         if (!this.tileGrid) return
         for (let y = 0; y < this.tileGrid.length; y++) {
             const gameObj = this.tileGrid[y]
@@ -138,7 +138,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private restart() {
+    private restart(): void {
         if (!this.tileGrid) return
         this.setCanMove(false)
         this.setIdle(false)
@@ -526,7 +526,7 @@ export class GameScene extends Phaser.Scene {
         return matches
     }
 
-    private hintMove() {
+    private hintMove(): void {
         this.findMove = false
         if (!this.tileGrid || this.findMove) return
         const pivot = Phaser.Math.Between(1, CONST.gridHeight - 1)
@@ -604,31 +604,21 @@ export class GameScene extends Phaser.Scene {
         if (!this.findMove) console.log('No move')
     }
 
-    private swapTileVertical(y1: number, y2: number, x: number) {
+    private swapTileVertical(y1: number, y2: number, x: number): void {
         if (!this.tileGrid) return
         const tmp_tile = this.tileGrid[y1][x]
         this.tileGrid[y1][x] = this.tileGrid[y2][x]
         this.tileGrid[y2][x] = tmp_tile
     }
 
-    private swapTileHorizontal(x1: number, x2: number, y: number) {
+    private swapTileHorizontal(x1: number, x2: number, y: number): void {
         if (!this.tileGrid) return
         const tmp_tile = this.tileGrid[y][x1]
         this.tileGrid[y][x1] = this.tileGrid[y][x2]
         this.tileGrid[y][x2] = tmp_tile
     }
 
-    private checkTileGridFull() {
-        if (!this.tileGrid) return
-        for (let y = 0; y < this.tileGrid.length; y++) {
-            for (let x = 0; x < this.tileGrid[y].length; x++) {
-                if (this.tileGrid[y][x] === undefined) return false
-            }
-        }
-        return true
-    }
-
-    update(_time: number, _delta: number): void {
+    public update(_time: number, _delta: number): void {
         this.delta = _delta
         if (this.idle) {
             this.timeToplayIdleEffect++
@@ -655,21 +645,15 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    public setCanMove(canMove: boolean) {
+    public setCanMove(canMove: boolean): void {
         this.canMove = canMove
     }
 
-    public setIdle(idle: boolean) {
+    public setIdle(idle: boolean): void {
         this.idle = idle
     }
 
-    private getTotalOverlap(tiles: Tile[]) {
-        let res = 0
-        for (const tile of tiles) res += tile.getOverlap() + 1
-        return res
-    }
-
-    private removeAllInRow(y: number) {
+    private removeAllInRow(y: number): void {
         if (!this.tileGrid) return
         for (let x = 0; x < this.tileGrid[y].length; x++) {
             if (this.tileGrid[y][x]) {
@@ -679,7 +663,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private removeAllInColumn(x: number) {
+    private removeAllInColumn(x: number): void {
         if (!this.tileGrid) return
         for (let y = 0; y < this.tileGrid.length; y++) {
             if (this.tileGrid[y][x]) {
@@ -689,7 +673,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private remove4Matches(x: number, y: number) {
+    private remove4Matches(x: number, y: number): void {
         if (!this.tileGrid) return
         if (x > 0 && this.tileGrid[y][x - 1]) {
             if (this.tileGrid[y][x - 1].getOverlap() >= 5) {
@@ -731,7 +715,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private remove5Matches(tile: Tile) {
+    private remove5Matches(tile: Tile): void {
         if (!this.tileGrid) return
         const prevScore = this.score
         for (let y = 0; y < this.tileGrid.length; y++) {
@@ -750,7 +734,7 @@ export class GameScene extends Phaser.Scene {
         this.matchesTimeLine.play()
     }
 
-    private destroyCell(x: number, y: number) {
+    private destroyCell(x: number, y: number): void {
         if (!this.tileGrid || !this.tileGrid[y][x]) return
         this.tileGrid[y][x].destroy()
         this.emitterManager.explodeBoardEmitter(x, y)

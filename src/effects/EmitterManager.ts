@@ -13,16 +13,16 @@ export class EmitterManager {
         this.customEmitter = CustomEmitter.getInstance(this.scene)
     }
 
-    static getInstance(scene: Phaser.Scene) {
+    static getInstance(scene: Phaser.Scene): EmitterManager {
         if (!EmitterManager.instance) EmitterManager.instance = new EmitterManager(scene)
         return EmitterManager.instance
     }
 
-    public update() {
+    public update(): void {
         ///
     }
 
-    public createBoardEmitter() {
+    public createBoardEmitter(): void {
         this.boardEmitter = []
         for (let y = 0; y < CONST.gridHeight; y++) {
             this.boardEmitter[y] = []
@@ -48,11 +48,11 @@ export class EmitterManager {
         }
     }
 
-    public explodeBoardEmitter(x: number, y: number) {
+    public explodeBoardEmitter(x: number, y: number): void {
         this.boardEmitter[y][x].explode(5)
     }
 
-    public setColorEmitter(x: number, y: number, color: string) {
+    public setColorEmitter(x: number, y: number, color: string): void {
         this.boardEmitter[y][x].setConfig({
             frame: [color],
             lifespan: 300, //300
@@ -64,11 +64,7 @@ export class EmitterManager {
         })
     }
 
-    public playConfettiEffect() {
+    public playConfettiEffect(): void {
         this.customEmitter.playConfettiEffect()
-        // this.scene.add.particles(200, 200, 'red', {
-        //     maxParticles: 100,
-        //     gravityY: 500,
-        // })
     }
 }

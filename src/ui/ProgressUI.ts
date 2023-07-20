@@ -13,7 +13,7 @@ export class ProgressUI extends Phaser.GameObjects.Container {
         this.init()
     }
 
-    private init() {
+    private init(): void {
         this.scene.add.container(0, 0, this)
         this.setSize(this.scene.sys.canvas.width, 144)
         this.add(this.scene.add.rectangle(0, 0, this.width, this.height, 0x0000ff, 1).setOrigin(0))
@@ -59,7 +59,7 @@ export class ProgressUI extends Phaser.GameObjects.Container {
         this.add([this.progressbar, this.progressbarFill, this.levelDisplay])
     }
 
-    public updateProgreebar(percentage: number) {
+    public updateProgreebar(percentage: number): void {
         this.scene.add.tween({
             targets: this.progressbarFill,
             duration: 1000,
@@ -82,7 +82,7 @@ export class ProgressUI extends Phaser.GameObjects.Container {
         })
     }
 
-    public updateScore(prevScore: number, currentScore: number) {
+    public updateScore(prevScore: number, currentScore: number): void {
         this.scene.tweens.addCounter({
             from: prevScore,
             to: currentScore,
@@ -101,17 +101,17 @@ export class ProgressUI extends Phaser.GameObjects.Container {
         })
     }
 
-    public levelUp() {
+    public levelUp(): void {
         this.level++
         this.maxScore += 2000
         this.levelDisplay.setText(`Level ${this.level}`)
     }
 
-    public getMaxScore() {
+    public getMaxScore(): number {
         return this.maxScore
     }
 
-    public getLevel() {
+    public getLevel(): number {
         return this.level
     }
 }

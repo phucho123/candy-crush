@@ -14,7 +14,6 @@ export class TweenManager {
     private levelupPopup: LevelupPopup
     private ellipse: Phaser.Geom.Ellipse
     private rect: Phaser.Geom.Rectangle
-
     private i = 0
 
     constructor(scene: Phaser.Scene) {
@@ -38,12 +37,12 @@ export class TweenManager {
         )
     }
 
-    static getInstance(scene: Phaser.Scene) {
+    static getInstance(scene: Phaser.Scene): TweenManager {
         if (!TweenManager.instance) TweenManager.instance = new TweenManager(scene)
         return TweenManager.instance
     }
 
-    restartTweenPlay(tileGrid: Tile[][]) {
+    public restartTweenPlay(tileGrid: Tile[][]): void {
         const size = this.gameObj.length
         for (let y = 0; y < CONST.gridHeight; y++) {
             for (let x = 0; x < CONST.gridWidth; x++) {
@@ -118,13 +117,13 @@ export class TweenManager {
         })
     }
 
-    public selectedTileTweenPlay(tile: Tile, number: number) {
+    public selectedTileTweenPlay(tile: Tile, number: number): void {
         if (number == 1) {
             this.selectedTileTweenDestroy(1)
             this.firstSelectedTileTween = this.scene.add.tween({
                 targets: tile,
-                scale: 1.2,
-                yoyo: true,
+                angle: 360,
+                yoyo: false,
                 duration: 300,
                 repeat: -1,
             })
@@ -132,31 +131,33 @@ export class TweenManager {
             this.selectedTileTweenDestroy(2)
             this.secondSelectedTileTween = this.scene.add.tween({
                 targets: tile,
-                scale: 1.2,
-                yoyo: true,
+                angle: 360,
+                yoyo: false,
                 duration: 300,
                 repeat: -1,
             })
         }
     }
 
-    public selectedTileTweenDestroy(number: number) {
+    public selectedTileTweenDestroy(number: number): void {
         if (number == 1 && this.firstSelectedTileTween) {
             if (this.firstSelectedTileTween.targets) {
                 const tile = this.firstSelectedTileTween.targets[0] as Tile
-                tile.setScale(1)
+                // tile.setScale(1)
+                tile.angle = 0
             }
             this.firstSelectedTileTween.destroy()
         } else if (number == 2 && this.secondSelectedTileTween) {
             if (this.secondSelectedTileTween.targets) {
                 const tile = this.secondSelectedTileTween.targets[0] as Tile
-                tile.setScale(1)
+                // tile.setScale(1)
+                tile.angle = 0
             }
             this.secondSelectedTileTween.destroy()
         }
     }
 
-    public resetTileTween(tile: Tile, y: number) {
+    public resetTileTween(tile: Tile, y: number): void {
         this.scene.add.tween({
             targets: tile,
             y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
@@ -167,7 +168,7 @@ export class TweenManager {
         })
     }
 
-    public fillTileTween(tile: Tile, y: number) {
+    public fillTileTween(tile: Tile, y: number): void {
         this.scene.add.tween({
             targets: tile,
             y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
@@ -181,7 +182,7 @@ export class TweenManager {
         })
     }
 
-    public swapTileTween(firstSelectedTile: Tile, secondSelectedTile: Tile) {
+    public swapTileTween(firstSelectedTile: Tile, secondSelectedTile: Tile): void {
         this.scene.add.tween({
             targets: firstSelectedTile,
             x: secondSelectedTile.x,
@@ -208,7 +209,7 @@ export class TweenManager {
         })
     }
 
-    overlapTileTweenPlay(tiles: Tile[], x: number, y: number) {
+    public overlapTileTweenPlay(tiles: Tile[], x: number, y: number): void {
         this.scene.add.tween({
             targets: tiles,
             x: x,
@@ -222,7 +223,7 @@ export class TweenManager {
         })
     }
 
-    playHintTween(tile1: Tile, tile2: Tile) {
+    public playHintTween(tile1: Tile, tile2: Tile): void {
         const x1 = tile1.x
         const y1 = tile1.y
         const x2 = tile2.x
@@ -251,7 +252,7 @@ export class TweenManager {
         })
     }
 
-    playLevelUpEffect(level: number) {
+    public playLevelUpEffect(level: number): void {
         this.levelupPopup.resetPosition()
         this.levelupPopup.setContent(level)
         this.scene.add.tween({
@@ -271,7 +272,7 @@ export class TweenManager {
         })
     }
 
-    playBoardIdleEffect(tiles: Tile[][]) {
+    public playBoardIdleEffect(tiles: Tile[][]): void {
         for (let y = 0; y < CONST.gridHeight; y++) {
             for (let x = 0; x < CONST.gridWidth; x++) {
                 if (tiles[y][x])

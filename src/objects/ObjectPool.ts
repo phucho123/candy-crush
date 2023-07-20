@@ -11,7 +11,7 @@ export class ObjectPool {
         this.pool = []
     }
 
-    static getInstance(scene: Phaser.Scene) {
+    static getInstance(scene: Phaser.Scene): ObjectPool {
         if (!ObjectPool.instance) {
             console.log('Create new Object Pool')
             ObjectPool.instance = new ObjectPool(scene)
@@ -19,7 +19,7 @@ export class ObjectPool {
         return ObjectPool.instance
     }
 
-    addTile(x: number, y: number): Tile {
+    public addTile(x: number, y: number): Tile {
         const randomTileType: string =
             CONST.candyTypes[Phaser.Math.RND.between(8, CONST.candyTypes.length - 1)]
 

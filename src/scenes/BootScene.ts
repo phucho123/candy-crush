@@ -8,7 +8,7 @@ export class BootScene extends Phaser.Scene {
         })
     }
 
-    preload(): void {
+    public preload(): void {
         // set the background and create loading bar
         this.cameras.main.setBackgroundColor(0x98d687)
         this.createLoadingbar()
@@ -43,7 +43,7 @@ export class BootScene extends Phaser.Scene {
         this.load.pack('preload', './assets/pack.json', 'preload')
     }
 
-    update(): void {
+    public update(): void {
         this.scene.start('GameScene')
     }
 

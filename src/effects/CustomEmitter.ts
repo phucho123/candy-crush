@@ -18,7 +18,7 @@ export class CustomEmitter {
         return CustomEmitter.instance
     }
 
-    public init() {
+    public init(): void {
         this.pool = this.scene.add.group({
             classType: Confetti,
             maxSize: 200,
@@ -26,7 +26,7 @@ export class CustomEmitter {
         })
     }
 
-    public playConfettiEffect() {
+    public playConfettiEffect(): void {
         let tmp = this.pool.get()
         let a = 0
         while (tmp) {
