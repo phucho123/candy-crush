@@ -28,7 +28,7 @@ export class Tile extends Phaser.GameObjects.Image {
                     targets: this,
                     duration: 500,
                     yoyo: true,
-                    alpha: 0.1,
+                    scale: 0.7,
                     repeat: -1,
                     ease: 'sine.inout',
                 })

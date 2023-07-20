@@ -736,8 +736,20 @@ export class GameScene extends Phaser.Scene {
 
     private destroyCell(x: number, y: number): void {
         if (!this.tileGrid || !this.tileGrid[y][x]) return
-        this.tileGrid[y][x].destroy()
+        const tile = this.tileGrid[y][x]
         this.emitterManager.explodeBoardEmitter(x, y)
         ;(this.tileGrid[y][x] as Tile | undefined) = undefined
+
+        tile.setDepth(10)
+        this.add.tween({
+            targets: tile,
+            scale: 0.2,
+            x: 100,
+            y: 100,
+            duration: 300,
+            onComplete: () => {
+                tile.destroy()
+            },
+        })
     }
 }

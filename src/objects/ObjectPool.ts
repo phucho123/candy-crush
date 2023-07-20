@@ -42,6 +42,8 @@ export class ObjectPool {
             tiles[0].setActive(true)
             tiles[0].setVisible(true)
             tiles[0].setAlpha(1)
+            tiles[0].setScale(1)
+            tiles[0].setDepth(-1)
             tiles[0].setPosition(
                 x * CONST.tileWidth + CONST.tileWidth / 2,
                 y * CONST.tileHeight + CONST.tileHeight / 2 + CONST.alignY
