@@ -11,8 +11,6 @@ export class Tile extends Phaser.GameObjects.Image {
         super(aParams.scene, aParams.x, aParams.y, aParams.texture, aParams.frame)
 
         // set image settings
-        // this.setOrigin(0, 0)
-        // this.totalOverlap = 0
         this.overlap = 0
         this.setDepth(-1)
         this.setInteractive()

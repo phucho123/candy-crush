@@ -12,18 +12,10 @@ export class Confetti extends Phaser.GameObjects.Image {
         super(scene, 0, 0, '')
         console.log('Create new confitti')
         this.delta = 1
-
         this.setTexture(this.colors[Phaser.Math.Between(0, 3)])
-
-        // this.speed = Phaser.Math.GetSpeed(400, 1)
-
-        // this.scene.add.existing(this)
         this.scene.physics.world.enable(this)
-
         this.body.setAllowGravity(true)
-
         const scale = Phaser.Math.Between(1, 5) * 0.1
-
         this.setScale(scale).setDepth(1)
         this.body.setMass(1)
     }

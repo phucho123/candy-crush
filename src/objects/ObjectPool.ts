@@ -1,5 +1,5 @@
 import { CONST } from '../const/const'
-import { Tile } from './tile'
+import { Tile } from './Tile'
 
 export class ObjectPool {
     static instance: ObjectPool | null = null

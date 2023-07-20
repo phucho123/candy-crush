@@ -96,6 +96,17 @@
         "type": "image",
         "key": "bomb",
         "url": "./assets/images/bombcolor.png"
+      },
+      {
+        "type": "image",
+        "key": "pikachu",
+        "url": "./assets/images/pikachu.png"
+      },
+      {
+        "type": "bitmapFont",
+        "key": "font",
+        "textureURL": "./assets/fonts/font.png",
+        "fontDataURL": "./assets/fonts/font.xml"
       }
     ]
   }

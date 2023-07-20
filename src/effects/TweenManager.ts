@@ -1,7 +1,6 @@
 import { CONST } from '../const/const'
-import { Tile } from '../objects/tile'
-import { GameScene } from '../scenes/game-scene'
-import { CustomEmitter } from './CustomEmitter'
+import { Tile } from '../objects/Tile'
+import { GameScene } from '../scenes/GameScene'
 import { LevelupPopup } from './LevelupPopup'
 
 export class TweenManager {
@@ -13,14 +12,30 @@ export class TweenManager {
     private secondSelectedTileTween: Phaser.Tweens.Tween
     private gameObj: Tile[]
     private levelupPopup: LevelupPopup
-    private customEmitter: CustomEmitter
+    private ellipse: Phaser.Geom.Ellipse
+    private rect: Phaser.Geom.Rectangle
+
+    private i = 0
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene
         this.gameScene = GameScene.getIntance()
         this.gameObj = [] as Tile[]
         this.levelupPopup = LevelupPopup.getInstance(this.scene)
-        this.customEmitter = CustomEmitter.getInstance(this.scene)
+
+        this.rect = new Phaser.Geom.Rectangle(
+            this.scene.sys.canvas.width / 2 - 150,
+            this.scene.sys.canvas.height / 2 + 100 - 150,
+            300,
+            300
+        )
+
+        this.ellipse = new Phaser.Geom.Ellipse(
+            this.scene.sys.canvas.width / 2,
+            this.scene.sys.canvas.height / 2 + 100,
+            400,
+            400
+        )
     }
 
     static getInstance(scene: Phaser.Scene) {
@@ -37,36 +52,38 @@ export class TweenManager {
             }
         }
 
-        ///shuffle array
-        for (let i = this.gameObj.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1))
-            ;[this.gameObj[i], this.gameObj[j]] = [this.gameObj[j], this.gameObj[i]]
+        let shape
+
+        const type = Phaser.Math.Between(0, 1)
+        if (type == 0) {
+            shape = this.rect
+            Phaser.Actions.PlaceOnRectangle(this.gameObj, this.rect)
+        } else {
+            shape = this.ellipse
+            Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse)
+            const rand = Phaser.Math.Between(0, 1)
+            if (rand == 0) this.ellipse.setSize(400, 300)
+            else this.ellipse.setSize(400, 400)
         }
-
-        const circle = new Phaser.Geom.Circle(
-            this.scene.sys.canvas.width / 2,
-            this.scene.sys.canvas.height / 2 + 144,
-            200
-        )
-
-        Phaser.Actions.PlaceOnCircle(this.gameObj, circle)
 
         if (this.restartTween) this.restartTween.destroy()
 
         this.restartTween = this.scene.tweens.add({
-            targets: circle,
-            radius: 200,
+            targets: shape,
+            x: shape.x,
+            y: shape.y,
             ease: 'Quintic.easeInOut',
             duration: 1000,
             yoyo: true,
             repeat: 0,
             onUpdate: () => {
-                Phaser.Actions.RotateAroundDistance(
-                    this.gameObj,
-                    { x: circle.x, y: circle.y },
-                    0.02,
-                    circle.radius
-                )
+                if (type == 0) Phaser.Actions.PlaceOnRectangle(this.gameObj, this.rect, this.i)
+                else Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse, this.i)
+
+                this.i++
+                if (this.i === this.gameObj.length) {
+                    this.i = 0
+                }
             },
             onComplete: () => {
                 if (tileGrid) {
@@ -78,7 +95,7 @@ export class TweenManager {
                                     x: (x + 0.5) * CONST.tileWidth,
                                     y: (y + 0.5) * CONST.tileHeight + CONST.alignY,
                                     repeat: 0,
-                                    ease: 'quad.out',
+                                    ease: 'bounce.out',
                                     duration: 1000,
                                     onComplete: () => {
                                         this.gameScene?.checkMatches()
@@ -90,7 +107,7 @@ export class TweenManager {
                                     x: (x + 0.5) * CONST.tileWidth,
                                     y: (y + 0.5) * CONST.tileHeight + CONST.alignY,
                                     repeat: 0,
-                                    ease: 'quad.out',
+                                    ease: 'bounce.out',
                                     duration: 1000,
                                 })
                             }
@@ -144,12 +161,9 @@ export class TweenManager {
             targets: tile,
             y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
             ease: 'bounce',
-            duration: 300, //200 //700
+            duration: 300,
             repeat: 0,
             yoyo: false,
-            // onUpdate: () => {
-            //     tile.updateTotalOverlayDisplay()
-            // },
         })
     }
 
@@ -157,17 +171,13 @@ export class TweenManager {
         this.scene.add.tween({
             targets: tile,
             y: CONST.tileHeight * y + CONST.tileHeight / 2 + CONST.alignY,
-            duration: 300, //200 //700
+            duration: 300,
             repeat: 0,
             yoyo: false,
             ease: 'bounce',
             onComplete: () => {
-                // this.gameScene?.setIdle(true)
                 this.gameScene?.checkMatches()
             },
-            // onUpdate: () => {
-            //     tile.updateTotalOverlayDisplay()
-            // },
         })
     }
 
@@ -181,9 +191,6 @@ export class TweenManager {
             duration: 300,
             repeat: 0,
             yoyo: false,
-            // onUpdate: () => {
-            //     firstSelectedTile.updateTotalOverlayDisplay()
-            // },
         })
 
         this.scene.add.tween({
@@ -196,12 +203,8 @@ export class TweenManager {
             repeat: 0,
             yoyo: false,
             onComplete: () => {
-                // this.gameScene?.setIdle(true)
                 this.gameScene?.checkMatches()
             },
-            // onUpdate: () => {
-            //     secondSelectedTile.updateTotalOverlayDisplay()
-            // },
         })
     }
 
@@ -248,14 +251,14 @@ export class TweenManager {
         })
     }
 
-    playLevelUpEffect(level: number, score: number) {
+    playLevelUpEffect(level: number) {
         this.levelupPopup.resetPosition()
-        this.levelupPopup.setContent(level, score)
+        this.levelupPopup.setContent(level)
         this.scene.add.tween({
             targets: this.levelupPopup,
             duration: 500,
             ease: 'back',
-            x: { from: -100, to: this.scene.sys.canvas.width / 2 },
+            y: this.scene.sys.canvas.height / 2,
         })
 
         this.scene.add.tween({
@@ -266,5 +269,23 @@ export class TweenManager {
             ease: 'back',
             y: -200,
         })
+    }
+
+    playBoardIdleEffect(tiles: Tile[][]) {
+        for (let y = 0; y < CONST.gridHeight; y++) {
+            for (let x = 0; x < CONST.gridWidth; x++) {
+                if (tiles[y][x])
+                    this.scene.tweens.add({
+                        targets: tiles[y][x],
+                        scale: 0.8,
+                        alpha: 0.1,
+                        ease: 'sine.inout',
+                        duration: 300,
+                        delay: x * 50,
+                        repeat: 0,
+                        yoyo: true,
+                    })
+            }
+        }
     }
 }

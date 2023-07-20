@@ -1,5 +1,5 @@
-import { BootScene } from './scenes/boot-scene'
-import { GameScene } from './scenes/game-scene'
+import { BootScene } from './scenes/BootScene'
+import { GameScene } from './scenes/GameScene'
 
 export const GameConfig: Phaser.Types.Core.GameConfig = {
     title: 'Candy crush',
