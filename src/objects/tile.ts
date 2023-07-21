@@ -1,12 +1,11 @@
 import { IImageConstructor } from '../interfaces/image.interface'
 
 export class Tile extends Phaser.GameObjects.Image {
-    // private totalOverlapDisplay: Phaser.GameObjects.Text
     private color: string
     private matches4Tween: Phaser.Tweens.Tween
     private matches5Tween: Phaser.Tweens.Tween
     private overlap: number
-    private fx: Phaser.FX.Glow
+    private matches5EffectImage: Phaser.GameObjects.Image
     constructor(aParams: IImageConstructor) {
         super(aParams.scene, aParams.x, aParams.y, aParams.texture, aParams.frame)
 
@@ -16,6 +15,11 @@ export class Tile extends Phaser.GameObjects.Image {
         this.setInteractive()
 
         this.setColor()
+        this.matches5EffectImage = this.scene.add
+            .image(this.x, this.y, 'shockWave')
+            .setVisible(false)
+            .setDepth(-0.5)
+            .setTint(0xff0000)
 
         this.scene.add.existing(this)
     }
@@ -36,17 +40,20 @@ export class Tile extends Phaser.GameObjects.Image {
 
         if (this.overlap >= 5) {
             this.setTexture('bomb')
-            if (this.preFX) {
-                this.preFX.setPadding(50)
-                this.fx = this.preFX.addGlow()
-                if (!this.matches5Tween || this.matches5Tween.isDestroyed())
-                    this.matches5Tween = this.scene.tweens.add({
-                        targets: this.fx,
-                        outerStrength: 20,
-                        yoyo: true,
-                        loop: -1,
-                        ease: 'sine.inout',
-                    })
+            if (!this.matches5Tween || this.matches5Tween.isDestroyed()) {
+                this.matches5EffectImage.setVisible(true)
+                this.matches5EffectImage.setAlpha(1).setScale(0)
+                this.matches5Tween = this.scene.add.tween({
+                    targets: this.matches5EffectImage,
+                    scale: 3,
+                    alpha: 0,
+                    yoyo: false,
+                    duration: 1000,
+                    repeat: -1,
+                    onUpdate: () => {
+                        this.matches5EffectImage.setPosition(this.x, this.y)
+                    },
+                })
             }
         }
     }
@@ -59,9 +66,12 @@ export class Tile extends Phaser.GameObjects.Image {
         this.setActive(false)
         this.setVisible(false)
         this.overlap = 0
-        if (this.matches4Tween) this.matches4Tween.destroy()
+
+        if (this.matches4Tween) {
+            this.matches4Tween.destroy()
+        }
         if (this.matches5Tween) {
-            this.fx.destroy()
+            this.matches5EffectImage.setVisible(false)
             this.matches5Tween.destroy()
         }
     }

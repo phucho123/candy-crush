@@ -60,6 +60,7 @@ export class GameScene extends Phaser.Scene {
 
         // set background color
         this.cameras.main.setBackgroundColor(0x78aade)
+        // this.cameras.main.setBackgroundColor(0x000000)
 
         // Init grid with tiles
         this.tileGrid = []
@@ -675,30 +676,41 @@ export class GameScene extends Phaser.Scene {
 
     private remove4Matches(x: number, y: number): void {
         if (!this.tileGrid) return
+        const tile4 = []
         if (x > 0 && this.tileGrid[y][x - 1]) {
             if (this.tileGrid[y][x - 1].getOverlap() >= 5) {
                 this.removeAllInColumn(x - 1)
                 this.removeAllInRow(y)
+            } else if (this.tileGrid[y][x - 1] && this.tileGrid[y][x - 1].getOverlap() == 4) {
+                tile4.push({ x: x - 1, y: y })
+                this.destroyCell(x - 1, y)
+                this.score += 100
             } else {
                 this.destroyCell(x - 1, y)
                 this.score += 100
             }
         }
-
         if (x < CONST.gridWidth - 1 && this.tileGrid[y][x + 1]) {
             if (this.tileGrid[y][x + 1].getOverlap() >= 5) {
                 this.removeAllInColumn(x + 1)
                 this.removeAllInRow(y)
+            } else if (this.tileGrid[y][x + 1] && this.tileGrid[y][x + 1].getOverlap() == 4) {
+                tile4.push({ x: x + 1, y: y })
+                this.destroyCell(x + 1, y)
+                this.score += 100
             } else {
                 this.destroyCell(x + 1, y)
                 this.score += 100
             }
         }
-
         if (y > 0 && this.tileGrid[y - 1][x]) {
             if (this.tileGrid[y - 1][x].getOverlap() >= 5) {
                 this.removeAllInColumn(x)
                 this.removeAllInRow(y - 1)
+            } else if (this.tileGrid[y - 1][x] && this.tileGrid[y - 1][x].getOverlap() == 4) {
+                tile4.push({ x: x, y: y - 1 })
+                this.destroyCell(x, y - 1)
+                this.score += 100
             } else {
                 this.destroyCell(x, y - 1)
                 this.score += 100
@@ -708,10 +720,18 @@ export class GameScene extends Phaser.Scene {
             if (this.tileGrid[y + 1][x].getOverlap() >= 5) {
                 this.removeAllInColumn(x)
                 this.removeAllInRow(y + 1)
+            } else if (this.tileGrid[y + 1][x] && this.tileGrid[y + 1][x].getOverlap() == 4) {
+                tile4.push({ x: x, y: y + 1 })
+                this.destroyCell(x, y + 1)
+                this.score += 100
             } else {
                 this.destroyCell(x, y + 1)
                 this.score += 100
             }
+        }
+
+        for (const tile of tile4) {
+            this.remove4Matches(tile.x, tile.y)
         }
     }
 
@@ -739,17 +759,18 @@ export class GameScene extends Phaser.Scene {
         const tile = this.tileGrid[y][x]
         this.emitterManager.explodeBoardEmitter(x, y)
         ;(this.tileGrid[y][x] as Tile | undefined) = undefined
-
         tile.setDepth(10)
-        this.add.tween({
-            targets: tile,
-            scale: 0.2,
-            x: 100,
-            y: 100,
-            duration: 300,
-            onComplete: () => {
-                tile.destroy()
-            },
-        })
+        if (tile.getOverlap() >= 5) tile.destroy()
+        else
+            this.add.tween({
+                targets: tile,
+                scale: 0.2,
+                x: 100,
+                y: 100,
+                duration: 300,
+                onComplete: () => {
+                    tile.destroy()
+                },
+            })
     }
 }

@@ -40,8 +40,8 @@ export class ProgressUI extends Phaser.GameObjects.Container {
             'flares',
             {
                 frame: ['white'],
-                lifespan: 500,
-                speed: { min: 50, max: 100 },
+                lifespan: 250,
+                speed: { min: 60, max: 80 },
                 scale: { start: 0.1, end: 0 },
                 gravityY: 0,
                 blendMode: 'ADD',

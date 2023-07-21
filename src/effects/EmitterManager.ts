@@ -65,6 +65,6 @@ export class EmitterManager {
     }
 
     public playConfettiEffect(): void {
-        this.customEmitter.playConfettiEffect()
+        // this.customEmitter.playConfettiEffect()
     }
 }

@@ -107,6 +107,16 @@
         "key": "font",
         "textureURL": "./assets/fonts/font.png",
         "fontDataURL": "./assets/fonts/font.xml"
+      },
+      {
+        "type": "image",
+        "key": "shockWave",
+        "url": "./assets/particles/shock-wave.png"
+      },
+      {
+        "type": "image",
+        "key": "shockWave2",
+        "url": "./assets/particles/shock-wave2.png"
       }
     ]
   }
