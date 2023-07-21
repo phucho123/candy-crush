@@ -60,7 +60,6 @@ export class GameScene extends Phaser.Scene {
 
         // set background color
         this.cameras.main.setBackgroundColor(0x78aade)
-        // this.cameras.main.setBackgroundColor(0x000000)
 
         // Init grid with tiles
         this.tileGrid = []
