@@ -28,7 +28,7 @@ export class Confetti extends Phaser.GameObjects.Image {
                 Phaser.Math.Between(-300, 0),
                 Phaser.Math.Between(
                     this.scene.sys.canvas.height / 2 - 100,
-                    this.scene.sys.canvas.height / 2 + 200
+                    this.scene.sys.canvas.height / 2 + 100
                 )
             )
         } else {
@@ -36,7 +36,7 @@ export class Confetti extends Phaser.GameObjects.Image {
                 Phaser.Math.Between(this.scene.sys.canvas.width, this.scene.sys.canvas.width + 300),
                 Phaser.Math.Between(
                     this.scene.sys.canvas.height / 2 - 100,
-                    this.scene.sys.canvas.height / 2 + 200
+                    this.scene.sys.canvas.height / 2 + 100
                 )
             )
         }
@@ -82,7 +82,7 @@ export class Confetti extends Phaser.GameObjects.Image {
             this.alpha = Math.max(this.alpha - 0.005, 0)
         }
 
-        this.body.setAccelerationY(Math.max(0, this.body.acceleration.y + a_y))
+        this.body.setAccelerationY(Math.max(0, this.body.acceleration.y + a_y * this.delta))
 
         if (this.y > this.scene.sys.canvas.height || this.alpha <= 0) {
             this.setActive(false)

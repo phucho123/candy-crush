@@ -372,17 +372,15 @@ export class GameScene extends Phaser.Scene {
         if (!this.tileGrid) return
         // Loop through all the matches and remove the associated tiles
         const prevScore = this.score
-        // matches.sort((a: Tile[], b: Tile[]) => {
-        //     return b.length - a.length
-        // })
+        matches.sort((a: Tile[], b: Tile[]) => {
+            return b.length - a.length
+        })
         for (let i = 0; i < matches.length; i++) {
             const tempArr = matches[i].filter((tile) => tile.active)
             for (let j = 0; j < tempArr.length; j++) {
                 const tile = tempArr[j]
-
                 //Find where this tile lives in the theoretical grid
                 const tilePos = this.getTilePos(this.tileGrid, tile)
-
                 // Remove the tile from the theoretical grid
                 if (tilePos.x !== -1 && tilePos.y !== -1) {
                     this.findMove = false
@@ -745,7 +743,6 @@ export class GameScene extends Phaser.Scene {
                 }
             }
         }
-
         this.progressUI.updateProgreebar(this.score - this.prevScore)
         this.progressUI.updateScore(prevScore, this.score)
 
@@ -758,7 +755,9 @@ export class GameScene extends Phaser.Scene {
         const tile = this.tileGrid[y][x]
         this.emitterManager.explodeBoardEmitter(x, y)
         ;(this.tileGrid[y][x] as Tile | undefined) = undefined
-        tile.setDepth(10)
+
+        tile.setDepth(3)
+        tile.setActive(false)
         if (tile.getOverlap() >= 5) tile.destroy()
         else
             this.add.tween({

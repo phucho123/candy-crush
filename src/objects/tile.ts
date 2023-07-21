@@ -19,7 +19,6 @@ export class Tile extends Phaser.GameObjects.Image {
             .image(this.x, this.y, 'shockWave')
             .setVisible(false)
             .setDepth(-0.5)
-            .setTint(0xff0000)
 
         this.scene.add.existing(this)
     }
@@ -45,8 +44,8 @@ export class Tile extends Phaser.GameObjects.Image {
                 this.matches5EffectImage.setAlpha(1).setScale(0)
                 this.matches5Tween = this.scene.add.tween({
                     targets: this.matches5EffectImage,
-                    scale: 3,
-                    alpha: 0,
+                    scale: 2.5,
+                    alpha: 0.2,
                     yoyo: false,
                     duration: 1000,
                     repeat: -1,

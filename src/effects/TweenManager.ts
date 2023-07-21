@@ -4,9 +4,9 @@ import { GameScene } from '../scenes/GameScene'
 import { LevelupPopup } from './LevelupPopup'
 
 export class TweenManager {
+    public static instance: TweenManager | null = null
     private scene: Phaser.Scene
     private gameScene: GameScene | null
-    public static instance: TweenManager | null = null
     private restartTween: Phaser.Tweens.Tween
     private firstSelectedTileTween: Phaser.Tweens.Tween
     private secondSelectedTileTween: Phaser.Tweens.Tween

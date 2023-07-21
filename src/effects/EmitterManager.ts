@@ -6,11 +6,24 @@ export class EmitterManager {
     private scene: Phaser.Scene
     private boardEmitter: Phaser.GameObjects.Particles.ParticleEmitter[][]
     private customEmitter: CustomEmitter
+    // private confettiEmitter: Phaser.GameObjects.Particles.ParticleEmitter
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene
         this.createBoardEmitter()
         this.customEmitter = CustomEmitter.getInstance(this.scene)
+        // this.scene.input.on('pointerdown', () => this.playConfettiEffect())
+        // this.confettiEmitter = this.scene.add
+        //     .particles(0, 200, 'red', {
+        //         lifespan: 5000, //300
+        //         x: { min: -100, max: 0 },
+        //         speed: { min: 500, max: 900 },
+        //         // scaleX: { start: 0.8, end: 0 },
+        //         gravityY: 500,
+        //         gravityX: 200,
+        //         emitting: false,
+        //     })
+        //     .setDepth(10)
     }
 
     static getInstance(scene: Phaser.Scene): EmitterManager {
@@ -66,5 +79,16 @@ export class EmitterManager {
 
     public playConfettiEffect(): void {
         this.customEmitter.playConfettiEffect()
+        // this.confettiEmitter.emitting = true
+        // this.scene.add.tween({
+        //     targets: this.confettiEmitter,
+        //     gravityY: 300,
+        //     gravityX: 200,
+        //     duration: 1000,
+        //     // acceleration: -100,
+        //     onComplete: () => {
+        //         this.confettiEmitter.emitting = false
+        //     },
+        // })
     }
 }
