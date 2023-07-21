@@ -15,6 +15,7 @@ export class TweenManager {
     private ellipse: Phaser.Geom.Ellipse
     private rect: Phaser.Geom.Rectangle
     private i = 0
+    private timeArround = 5
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene
@@ -76,12 +77,19 @@ export class TweenManager {
             yoyo: true,
             repeat: 0,
             onUpdate: () => {
-                if (type == 0) Phaser.Actions.PlaceOnRectangle(this.gameObj, this.rect, this.i)
-                else Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse, this.i)
-
-                this.i++
-                if (this.i === this.gameObj.length) {
-                    this.i = 0
+                this.timeArround--
+                if (this.timeArround <= 0) {
+                    if (type == 0) {
+                        Phaser.Actions.PlaceOnRectangle(this.gameObj, this.rect, this.i)
+                        this.timeArround = 5
+                    } else {
+                        Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse, this.i)
+                        this.timeArround = 5
+                    }
+                    this.i++
+                    if (this.i === this.gameObj.length) {
+                        this.i = 0
+                    }
                 }
             },
             onComplete: () => {
@@ -143,14 +151,12 @@ export class TweenManager {
         if (number == 1 && this.firstSelectedTileTween) {
             if (this.firstSelectedTileTween.targets) {
                 const tile = this.firstSelectedTileTween.targets[0] as Tile
-                // tile.setScale(1)
                 tile.angle = 0
             }
             this.firstSelectedTileTween.destroy()
         } else if (number == 2 && this.secondSelectedTileTween) {
             if (this.secondSelectedTileTween.targets) {
                 const tile = this.secondSelectedTileTween.targets[0] as Tile
-                // tile.setScale(1)
                 tile.angle = 0
             }
             this.secondSelectedTileTween.destroy()
@@ -273,6 +279,7 @@ export class TweenManager {
     }
 
     public playBoardIdleEffect(tiles: Tile[][]): void {
+        this.gameScene?.setIdle(false)
         for (let y = 0; y < CONST.gridHeight; y++) {
             for (let x = 0; x < CONST.gridWidth; x++) {
                 if (tiles[y][x])
@@ -285,6 +292,7 @@ export class TweenManager {
                         delay: x * 50,
                         repeat: 0,
                         yoyo: true,
+                        onComplete: () => this.gameScene?.setIdle(true),
                     })
             }
         }

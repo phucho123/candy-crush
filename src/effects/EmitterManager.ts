@@ -62,7 +62,7 @@ export class EmitterManager {
     }
 
     public explodeBoardEmitter(x: number, y: number): void {
-        this.boardEmitter[y][x].explode(5)
+        this.boardEmitter[y][x].explode(10)
     }
 
     public setColorEmitter(x: number, y: number, color: string): void {
