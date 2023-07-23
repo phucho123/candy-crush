@@ -21,11 +21,14 @@ export class Tile extends Phaser.GameObjects.Image {
             .setDepth(-0.5)
 
         this.scene.add.existing(this)
+        // this.setBlendMode(Phaser.BlendModes.ADD)
+        this.setScale(0.9)
     }
 
     public setOverlap(overlap: number): void {
         this.overlap = overlap
         if (this.overlap >= 4) {
+            // this.setBlendMode(Phaser.BlendModes.COLOR_BURN)
             if (!this.matches4Tween || this.matches4Tween.isDestroyed())
                 this.matches4Tween = this.scene.add.tween({
                     targets: this,
@@ -35,6 +38,21 @@ export class Tile extends Phaser.GameObjects.Image {
                     repeat: -1,
                     ease: 'sine.inout',
                 })
+            if (!this.matches5Tween || this.matches5Tween.isDestroyed()) {
+                this.matches5EffectImage.setVisible(true)
+                this.matches5EffectImage.setAlpha(1).setScale(0)
+                this.matches5Tween = this.scene.add.tween({
+                    targets: this.matches5EffectImage,
+                    scale: 2.5,
+                    alpha: 0.2,
+                    yoyo: false,
+                    duration: 1000,
+                    repeat: -1,
+                    onUpdate: () => {
+                        this.matches5EffectImage.setPosition(this.x, this.y)
+                    },
+                })
+            }
         }
 
         if (this.overlap >= 5) {

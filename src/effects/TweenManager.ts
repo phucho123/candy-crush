@@ -16,6 +16,7 @@ export class TweenManager {
     private rect: Phaser.Geom.Rectangle
     private i = 0
     private timeArround = 5
+    private grids: Phaser.GameObjects.Rectangle[][]
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene
@@ -36,6 +37,26 @@ export class TweenManager {
             400,
             400
         )
+
+        this.grids = []
+
+        for (let y = 0; y < CONST.gridHeight; y++) {
+            this.grids[y] = []
+            for (let x = 0; x < CONST.gridWidth; x++) {
+                this.grids[y].push(
+                    this.scene.add
+                        .rectangle(
+                            x * CONST.tileWidth + CONST.tileWidth / 2,
+                            y * CONST.tileHeight + CONST.tileHeight / 2 + CONST.alignY,
+                            CONST.tileWidth - 5,
+                            CONST.tileHeight - 5,
+                            0xffffff
+                        )
+                        .setDepth(-10)
+                        .setAlpha(0)
+                )
+            }
+        }
     }
 
     static getInstance(scene: Phaser.Scene): TweenManager {
@@ -55,15 +76,34 @@ export class TweenManager {
         let shape
 
         const type = Phaser.Math.Between(0, 1)
+
         if (type == 0) {
             shape = this.rect
             Phaser.Actions.PlaceOnRectangle(this.gameObj, this.rect)
         } else {
             shape = this.ellipse
             Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse)
-            const rand = Phaser.Math.Between(0, 1)
-            if (rand == 0) this.ellipse.setSize(400, 300)
-            else this.ellipse.setSize(400, 400)
+
+            this.scene.tweens.add({
+                targets: shape,
+                width: 600,
+                height: 200,
+                duration: 1000,
+                ease: 'Sine.easeInOut',
+                repeat: 1,
+                yoyo: true,
+            })
+
+            this.scene.tweens.add({
+                targets: shape,
+                width: 200,
+                height: 600,
+                delay: 1000,
+                duration: 1000,
+                ease: 'Sine.easeInOut',
+                repeat: 1,
+                yoyo: true,
+            })
         }
 
         if (this.restartTween) this.restartTween.destroy()
@@ -73,7 +113,7 @@ export class TweenManager {
             x: shape.x,
             y: shape.y,
             ease: 'Quintic.easeInOut',
-            duration: 1000,
+            duration: 2000,
             yoyo: true,
             repeat: 0,
             onUpdate: () => {
@@ -84,7 +124,7 @@ export class TweenManager {
                         this.timeArround = 5
                     } else {
                         Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse, this.i)
-                        this.timeArround = 5
+                        this.timeArround = 3
                     }
                     this.i++
                     if (this.i === this.gameObj.length) {
@@ -128,19 +168,21 @@ export class TweenManager {
     public selectedTileTweenPlay(tile: Tile, number: number): void {
         if (number == 1) {
             this.selectedTileTweenDestroy(1)
+            tile.angle = -30
             this.firstSelectedTileTween = this.scene.add.tween({
                 targets: tile,
-                angle: 360,
-                yoyo: false,
+                angle: 30,
+                yoyo: true,
                 duration: 300,
                 repeat: -1,
             })
         } else if (number == 2) {
             this.selectedTileTweenDestroy(2)
+            tile.angle = -30
             this.secondSelectedTileTween = this.scene.add.tween({
                 targets: tile,
-                angle: 360,
-                yoyo: false,
+                angle: 30,
+                yoyo: true,
                 duration: 300,
                 repeat: -1,
             })
@@ -278,18 +320,17 @@ export class TweenManager {
         })
     }
 
-    public playBoardIdleEffect(tiles: Tile[][]): void {
+    public playBoardIdleEffect(): void {
         this.gameScene?.setIdle(false)
         for (let y = 0; y < CONST.gridHeight; y++) {
             for (let x = 0; x < CONST.gridWidth; x++) {
-                if (tiles[y][x])
+                if (this.grids[y][x])
                     this.scene.tweens.add({
-                        targets: tiles[y][x],
-                        scale: 0.8,
-                        alpha: 0.1,
+                        targets: this.grids[y][x],
+                        alpha: 1,
                         ease: 'sine.inout',
-                        duration: 300,
-                        delay: x * 50,
+                        duration: 400,
+                        delay: Math.abs(x + y) * 50,
                         repeat: 0,
                         yoyo: true,
                         onComplete: () => this.gameScene?.setIdle(true),

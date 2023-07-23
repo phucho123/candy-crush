@@ -282,12 +282,12 @@ export class GameScene extends Phaser.Scene {
         if (this.firstSelectedTile && this.secondSelectedTile) {
             if (this.firstSelectedTile?.getOverlap() >= 5) {
                 const tilePos = this.getTilePos(this.tileGrid, this.firstSelectedTile)
-                this.remove5Matches(this.secondSelectedTile)
+                this.remove5Matches(tilePos.x, tilePos.y, this.secondSelectedTile)
                 this.destroyCell(tilePos.x, tilePos.y)
                 return
             } else if (this.secondSelectedTile?.getOverlap() >= 5) {
                 const tilePos = this.getTilePos(this.tileGrid, this.secondSelectedTile)
-                this.remove5Matches(this.firstSelectedTile)
+                this.remove5Matches(tilePos.x, tilePos.y, this.firstSelectedTile)
                 this.destroyCell(tilePos.x, tilePos.y)
                 return
             }
@@ -630,7 +630,7 @@ export class GameScene extends Phaser.Scene {
             }
             if (this.timeToplayIdleEffect >= 1000) {
                 this.timeToplayIdleEffect = 0
-                this.tweenManager.playBoardIdleEffect(<Tile[][]> this.tileGrid)
+                this.tweenManager.playBoardIdleEffect()
             }
             this.hintButton.setAlpha(1)
             this.shuffleButton.setAlpha(1)
@@ -732,7 +732,7 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    private remove5Matches(tile: Tile): void {
+    private remove5Matches(x1: number, y1: number, tile: Tile): void {
         if (!this.tileGrid) return
         const prevScore = this.score
         for (let y = 0; y < this.tileGrid.length; y++) {
@@ -748,9 +748,11 @@ export class GameScene extends Phaser.Scene {
 
         this.matchesTimeLine.reset()
         this.matchesTimeLine.play()
+
+        this.cameras.main.shake(500, 0.03)
     }
 
-    private destroyCell(x: number, y: number): void {
+    public destroyCell(x: number, y: number): void {
         if (!this.tileGrid || !this.tileGrid[y][x]) return
         const tile = this.tileGrid[y][x]
         this.emitterManager.explodeBoardEmitter(x, y)

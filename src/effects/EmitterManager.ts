@@ -1,4 +1,5 @@
 import { CONST } from '../const/const'
+import { GameScene } from '../scenes/GameScene'
 import { CustomEmitter } from './CustomEmitter'
 
 export class EmitterManager {
@@ -6,10 +7,12 @@ export class EmitterManager {
     private scene: Phaser.Scene
     private boardEmitter: Phaser.GameObjects.Particles.ParticleEmitter[][]
     private customEmitter: CustomEmitter
+    private gameScene: GameScene | null
     // private confettiEmitter: Phaser.GameObjects.Particles.ParticleEmitter
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene
+        this.gameScene = GameScene.getIntance()
         this.createBoardEmitter()
         this.customEmitter = CustomEmitter.getInstance(this.scene)
         // this.scene.input.on('pointerdown', () => this.playConfettiEffect())
@@ -91,4 +94,25 @@ export class EmitterManager {
         //     },
         // })
     }
+
+    // public play5Matches(x1: number, y1: number, x2: number, y2: number) {
+    //     this.boardEmitter[y2][x2].emitting = true
+    //     this.boardEmitter[y2][x2].setPosition(
+    //         x1 * CONST.tileWidth + CONST.tileWidth / 2,
+    //         y1 * CONST.tileHeight + CONST.tileHeight / 2 + CONST.alignY
+    //     )
+    //     this.boardEmitter[y2][x2].gravityY = 1000
+
+    //     this.scene.add.tween({
+    //         targets: this.boardEmitter[y2][x2],
+    //         x: x2 * CONST.tileWidth + CONST.tileWidth / 2,
+    //         y: y2 * CONST.tileHeight + CONST.tileHeight / 2 + CONST.alignY,
+    //         duration: 300,
+    //         onComplete: () => {
+    //             this.boardEmitter[y2][x2].emitting = false
+    //             this.gameScene?.destroyCell(x2, y2)
+    //             this.explodeBoardEmitter(x2, y2)
+    //         },
+    //     })
+    // }
 }
