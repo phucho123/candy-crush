@@ -14,7 +14,9 @@ export class TweenManager {
     private levelupPopup: LevelupPopup
     private ellipse: Phaser.Geom.Ellipse
     private rect: Phaser.Geom.Rectangle
-    private i = 0
+    private triangle: Phaser.Geom.Triangle
+    private lines: Phaser.Geom.Line[]
+    private i = 1
     private timeArround = 5
     private grids: Phaser.GameObjects.Rectangle[][]
 
@@ -37,6 +39,20 @@ export class TweenManager {
             400,
             400
         )
+
+        this.triangle = new Phaser.Geom.Triangle(260, 200, 50, 500, 470, 500)
+        this.lines = []
+
+        this.lines.push(new Phaser.Geom.Line(260, 180, 200, 350))
+        this.lines.push(new Phaser.Geom.Line(200, 350, 50, 350))
+        this.lines.push(new Phaser.Geom.Line(50, 350, 200, 450))
+        this.lines.push(new Phaser.Geom.Line(200, 450, 150, 650))
+        this.lines.push(new Phaser.Geom.Line(150, 650, 280, 480))
+        this.lines.push(new Phaser.Geom.Line(280, 480, 400, 650))
+        this.lines.push(new Phaser.Geom.Line(400, 650, 350, 450))
+        this.lines.push(new Phaser.Geom.Line(350, 450, 470, 350))
+        this.lines.push(new Phaser.Geom.Line(470, 350, 320, 350))
+        this.lines.push(new Phaser.Geom.Line(260, 180, 320, 350))
 
         this.grids = []
 
@@ -75,18 +91,18 @@ export class TweenManager {
 
         let shape
 
-        const type = Phaser.Math.Between(0, 1)
+        const type = Phaser.Math.Between(0, 3)
 
         if (type == 0) {
             shape = this.rect
             Phaser.Actions.PlaceOnRectangle(this.gameObj, this.rect)
-        } else {
+        } else if (type == 1) {
             shape = this.ellipse
             Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse)
 
             this.scene.tweens.add({
                 targets: shape,
-                width: 600,
+                width: 500,
                 height: 200,
                 duration: 1000,
                 ease: 'Sine.easeInOut',
@@ -97,21 +113,24 @@ export class TweenManager {
             this.scene.tweens.add({
                 targets: shape,
                 width: 200,
-                height: 600,
+                height: 500,
                 delay: 1000,
                 duration: 1000,
                 ease: 'Sine.easeInOut',
                 repeat: 1,
                 yoyo: true,
             })
+        } else if (type == 2) {
+            shape = this.triangle
+        } else {
+            shape = this.rect
         }
 
         if (this.restartTween) this.restartTween.destroy()
 
         this.restartTween = this.scene.tweens.add({
             targets: shape,
-            x: shape.x,
-            y: shape.y,
+            radius: 0,
             ease: 'Quintic.easeInOut',
             duration: 2000,
             yoyo: true,
@@ -121,14 +140,41 @@ export class TweenManager {
                 if (this.timeArround <= 0) {
                     if (type == 0) {
                         Phaser.Actions.PlaceOnRectangle(this.gameObj, this.rect, this.i)
+                        this.i++
+                        if (this.i === this.gameObj.length) {
+                            this.i = 1
+                        }
+                        this.timeArround = 5
+                    } else if (type == 1) {
+                        Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse, this.i)
+                        this.i++
+                        if (this.i === this.gameObj.length) {
+                            this.i = 1
+                        }
+                        this.timeArround = 4
+                    } else if (type == 2) {
+                        const tmp = this.gameObj.pop()
+                        if (tmp) this.gameObj.unshift(tmp)
+                        Phaser.Actions.PlaceOnTriangle(this.gameObj, this.triangle)
                         this.timeArround = 5
                     } else {
-                        Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse, this.i)
-                        this.timeArround = 3
-                    }
-                    this.i++
-                    if (this.i === this.gameObj.length) {
-                        this.i = 0
+                        const tmp = this.gameObj.pop()
+                        if (tmp) this.gameObj.unshift(tmp)
+                        let tmp_1 = 0
+                        for (let i = 0; i < 10; i++) {
+                            if (i == 9) {
+                                Phaser.Actions.PlaceOnLine(
+                                    this.gameObj.slice(tmp_1, 64),
+                                    this.lines[i]
+                                )
+                            } else
+                                Phaser.Actions.PlaceOnLine(
+                                    this.gameObj.slice(tmp_1, tmp_1 + 6),
+                                    this.lines[i]
+                                )
+                            tmp_1 += 6
+                        }
+                        this.timeArround = 5
                     }
                 }
             },

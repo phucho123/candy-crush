@@ -107,7 +107,7 @@ export class EmitterManager {
     //         targets: this.boardEmitter[y2][x2],
     //         x: x2 * CONST.tileWidth + CONST.tileWidth / 2,
     //         y: y2 * CONST.tileHeight + CONST.tileHeight / 2 + CONST.alignY,
-    //         duration: 300,
+    //         duration: 300,n
     //         onComplete: () => {
     //             this.boardEmitter[y2][x2].emitting = false
     //             this.gameScene?.destroyCell(x2, y2)
