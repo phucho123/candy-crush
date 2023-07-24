@@ -31,7 +31,7 @@ export class GameScene extends Phaser.Scene {
     private objectPool: ObjectPool
     private delta: number
     private matchesTimeLine: Phaser.Time.Timeline
-    private timeToplayIdleEffect: number
+    private timeToPlayIdleEffect: number
 
     constructor() {
         super({
@@ -48,12 +48,12 @@ export class GameScene extends Phaser.Scene {
     private init(): void {
         this.emitterManager = EmitterManager.getInstance(this)
 
-        this.progressUI = new ProgressUI(this)
+        this.progressUI = ProgressUI.getInstance(this)
         this.tweenManager = TweenManager.getInstance(this)
 
         this.objectPool = ObjectPool.getInstance(this)
         this.idle = false
-        this.timeToplayIdleEffect = 0
+        this.timeToPlayIdleEffect = 0
         // Init variables
         this.canMove = true
         this.findMove = false
@@ -426,7 +426,7 @@ export class GameScene extends Phaser.Scene {
                 }
             }
         }
-        this.progressUI.updateProgreebar(this.score - this.prevScore)
+        this.progressUI.updateProgressbar(this.score - this.prevScore)
         this.progressUI.updateScore(prevScore, this.score)
     }
 
@@ -619,24 +619,24 @@ export class GameScene extends Phaser.Scene {
     public update(_time: number, _delta: number): void {
         this.delta = _delta
         if (this.idle) {
-            this.timeToplayIdleEffect++
+            this.timeToPlayIdleEffect++
             if (this.score - this.prevScore >= this.progressUI.getMaxScore()) {
                 this.restart()
-                this.progressUI.updateProgreebar(0)
+                this.progressUI.updateProgressbar(0)
                 this.progressUI.levelUp()
                 this.tweenManager.playLevelUpEffect(this.progressUI.getLevel())
                 this.emitterManager.playConfettiEffect()
                 this.prevScore = this.score
             }
-            if (this.timeToplayIdleEffect >= 1000) {
-                this.timeToplayIdleEffect = 0
+            if (this.timeToPlayIdleEffect >= 1000) {
+                this.timeToPlayIdleEffect = 0
                 this.tweenManager.playBoardIdleEffect()
             }
             this.hintButton.setAlpha(1)
             this.shuffleButton.setAlpha(1)
             this.canMove = true
         } else {
-            this.timeToplayIdleEffect = 0
+            this.timeToPlayIdleEffect = 0
             this.hintButton.setAlpha(0.5)
             this.shuffleButton.setAlpha(0.5)
             this.canMove = false
@@ -743,12 +743,10 @@ export class GameScene extends Phaser.Scene {
                 }
             }
         }
-        this.progressUI.updateProgreebar(this.score - this.prevScore)
+        this.progressUI.updateProgressbar(this.score - this.prevScore)
         this.progressUI.updateScore(prevScore, this.score)
-
         this.matchesTimeLine.reset()
         this.matchesTimeLine.play()
-
         this.cameras.main.shake(500, 0.03)
     }
 
@@ -757,7 +755,6 @@ export class GameScene extends Phaser.Scene {
         const tile = this.tileGrid[y][x]
         this.emitterManager.explodeBoardEmitter(x, y)
         ;(this.tileGrid[y][x] as Tile | undefined) = undefined
-
         tile.setDepth(3)
         tile.setActive(false)
         if (tile.getOverlap() >= 5) tile.destroy()

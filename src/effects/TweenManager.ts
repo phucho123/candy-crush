@@ -99,7 +99,6 @@ export class TweenManager {
         } else if (type == 1) {
             shape = this.ellipse
             Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse)
-
             this.scene.tweens.add({
                 targets: shape,
                 width: 500,
@@ -126,40 +125,36 @@ export class TweenManager {
             shape = this.rect
         }
 
-        if (this.restartTween) this.restartTween.destroy()
+        // if (this.restartTween) this.restartTween.destroy()
 
         this.restartTween = this.scene.tweens.add({
             targets: shape,
             radius: 0,
             ease: 'Quintic.easeInOut',
-            duration: 2000,
+            duration: 1000,
             yoyo: true,
             repeat: 0,
             onUpdate: () => {
                 this.timeArround--
+                this.i++
+                if (this.i === this.gameObj.length) {
+                    this.i = 0
+                }
                 if (this.timeArround <= 0) {
                     if (type == 0) {
                         Phaser.Actions.PlaceOnRectangle(this.gameObj, this.rect, this.i)
-                        this.i++
-                        if (this.i === this.gameObj.length) {
-                            this.i = 1
-                        }
-                        this.timeArround = 5
+                        this.timeArround = 3
                     } else if (type == 1) {
                         Phaser.Actions.PlaceOnEllipse(this.gameObj, this.ellipse, this.i)
-                        this.i++
-                        if (this.i === this.gameObj.length) {
-                            this.i = 1
-                        }
-                        this.timeArround = 4
+                        this.timeArround = 3
                     } else if (type == 2) {
-                        const tmp = this.gameObj.pop()
-                        if (tmp) this.gameObj.unshift(tmp)
+                        const tmp = this.gameObj.shift()
+                        if (tmp) this.gameObj.push(tmp)
                         Phaser.Actions.PlaceOnTriangle(this.gameObj, this.triangle)
-                        this.timeArround = 5
+                        this.timeArround = 3
                     } else {
-                        const tmp = this.gameObj.pop()
-                        if (tmp) this.gameObj.unshift(tmp)
+                        const tmp = this.gameObj.shift()
+                        if (tmp) this.gameObj.push(tmp)
                         let tmp_1 = 0
                         for (let i = 0; i < 10; i++) {
                             if (i == 9) {
@@ -174,7 +169,7 @@ export class TweenManager {
                                 )
                             tmp_1 += 6
                         }
-                        this.timeArround = 5
+                        this.timeArround = 3
                     }
                 }
             },

@@ -21,7 +21,7 @@ export class ObjectPool {
 
     public addTile(x: number, y: number): Tile {
         const randomTileType: string =
-            CONST.candyTypes[Phaser.Math.RND.between(8, CONST.candyTypes.length - 1)]
+            CONST.candyTypes[Phaser.Math.RND.between(7, CONST.candyTypes.length - 1)]
 
         const tiles = this.pool.filter((tile) => !tile.active)
 

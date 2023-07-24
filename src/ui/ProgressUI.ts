@@ -1,4 +1,5 @@
 export class ProgressUI extends Phaser.GameObjects.Container {
+    static instance: ProgressUI | null = null
     private progressbar: Phaser.GameObjects.Rectangle
     private progressbarFill: Phaser.GameObjects.Rectangle
     private progressbarEmitter: Phaser.GameObjects.Particles.ParticleEmitter
@@ -11,6 +12,11 @@ export class ProgressUI extends Phaser.GameObjects.Container {
     constructor(scene: Phaser.Scene) {
         super(scene)
         this.init()
+    }
+
+    static getInstance(scene: Phaser.Scene): ProgressUI {
+        if (!ProgressUI.instance) ProgressUI.instance = new ProgressUI(scene)
+        return ProgressUI.instance
     }
 
     private init(): void {
@@ -40,8 +46,8 @@ export class ProgressUI extends Phaser.GameObjects.Container {
             'flares',
             {
                 frame: ['white'],
-                lifespan: 250,
-                speed: { min: 60, max: 80 },
+                lifespan: 300,
+                speed: { min: 50, max: 100 },
                 scale: { start: 0.1, end: 0 },
                 gravityY: 0,
                 blendMode: 'ADD',
@@ -59,7 +65,7 @@ export class ProgressUI extends Phaser.GameObjects.Container {
         this.add([this.progressbar, this.progressbarFill, this.levelDisplay])
     }
 
-    public updateProgreebar(percentage: number): void {
+    public updateProgressbar(percentage: number): void {
         this.scene.add.tween({
             targets: this.progressbarFill,
             duration: 1000,
